@@ -8,6 +8,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using System.IO;
+using DiscoveryApi.Models;
+using DiscoveryApi.DAL;
 
 namespace DiscoveryApi
 {
@@ -28,8 +32,13 @@ namespace DiscoveryApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Initialize the link to the database
+            services.AddDbContext<apiContext>(options => options.UseMySql(Configuration.GetConnectionString("ApiConnection")));
+
             // Add framework services.
             services.AddMvc();
+            services.AddOptions();
+            services.Configure<ConfigModel>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,12 +47,19 @@ namespace DiscoveryApi
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Index}/{action=Index}");
+            });
             //For NGINX
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
+
+
         }
     }
 }

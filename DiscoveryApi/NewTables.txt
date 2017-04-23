@@ -1,0 +1,30 @@
+Scaffold-DbContext "server=localhost;userid=api;pwd=alley;port=3307;database=api;sslmode=none;" Pomelo.EntityFrameworkCore.MySql -OutputDir DAL
+
+CREATE TABLE server_sessions_data_conn(
+	id int(11) NOT NULL AUTO_INCREMENT,
+  session_id int(11) UNSIGNED NOT NULL,
+  location varchar(255) NOT NULL,
+  duration int(11) UNSIGNED NOT NULL,
+  stamp datetime NOT NULL,
+  ship varchar(255) NOT NULL,
+  ping int(11) UNSIGNED NOT NULL,
+  lag int(11) UNSIGNED NOT NULL,
+  loss int(11) UNSIGNED NOT NULL,   
+  PRIMARY KEY (id),
+  FOREIGN KEY (session_id) REFERENCES server_sessions(session_id)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE regions(
+  id int(11) NOT NULL AUTO_INCREMENT,
+  name varchar(255) NOT NULL,
+  PRIMARY KEY (id),
+)
+
+CREATE TABLE systems(
+  id int(11) NOT NULL AUTO_INCREMENT,
+  region_id int(11) NOT NULL,
+  nickname varchar(255) NOT NULL,
+  name varchar(255) NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (region_id) REFERENCES regions(id)
+)

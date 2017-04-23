@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DiscoveryApi.Models
+namespace DiscoveryApi.DAL
 {
     public partial class ServerSessionsConndata
     {

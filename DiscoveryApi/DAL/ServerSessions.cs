@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DiscoveryApi.Models
+namespace DiscoveryApi.DAL
 {
     public partial class ServerSessions
     {
+        public ServerSessions()
+        {
+            ServerSessionsDataConn = new HashSet<ServerSessionsDataConn>();
+        }
+
         public int SessionId { get; set; }
         public string PlayerId { get; set; }
         public int PlayerLagAvg { get; set; }
@@ -15,5 +20,7 @@ namespace DiscoveryApi.Models
         public DateTime? SessionEnd { get; set; }
         public string SessionIp { get; set; }
         public DateTime SessionStart { get; set; }
+
+        public virtual ICollection<ServerSessionsDataConn> ServerSessionsDataConn { get; set; }
     }
 }

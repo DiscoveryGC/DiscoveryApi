@@ -1,26 +1,22 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Configuration;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel.DataAnnotations.Schema;
 
-
-namespace DiscoveryApi.Models
+namespace DiscoveryApi.DAL
 {
     public partial class apiContext : DbContext
     {
         public virtual DbSet<ApiKeys> ApiKeys { get; set; }
+        public virtual DbSet<GameRegions> GameRegions { get; set; }
+        public virtual DbSet<GameSystems> GameSystems { get; set; }
         public virtual DbSet<ServerEvents> ServerEvents { get; set; }
         public virtual DbSet<ServerFactions> ServerFactions { get; set; }
         public virtual DbSet<ServerNames> ServerNames { get; set; }
         public virtual DbSet<ServerPlayercounts> ServerPlayercounts { get; set; }
         public virtual DbSet<ServerSessions> ServerSessions { get; set; }
-        public virtual DbSet<ServerSessionsConndata> ServerSessionsConndata { get; set; }
-        public virtual DbSet<ServerSessionsSystems> ServerSessionsSystems { get; set; }
+        public virtual DbSet<ServerSessionsDataConn> ServerSessionsDataConn { get; set; }
 
         public static IConfigurationRoot Configuration { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -43,6 +39,11 @@ namespace DiscoveryApi.Models
                     .HasColumnName("id")
                     .HasColumnType("int(11)");
 
+                entity.Property(e => e.Admin)
+                    .HasColumnName("admin")
+                    .HasColumnType("tinyint(1)")
+                    .HasDefaultValueSql("0");
+
                 entity.Property(e => e.Key)
                     .IsRequired()
                     .HasColumnName("key")
@@ -51,6 +52,52 @@ namespace DiscoveryApi.Models
                 entity.Property(e => e.Owner)
                     .HasColumnName("owner")
                     .HasColumnType("varchar(255)");
+            });
+
+            modelBuilder.Entity<GameRegions>(entity =>
+            {
+                entity.ToTable("game_regions");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Fullname)
+                    .IsRequired()
+                    .HasColumnName("fullname")
+                    .HasColumnType("varchar(255)");
+            });
+
+            modelBuilder.Entity<GameSystems>(entity =>
+            {
+                entity.ToTable("game_systems");
+
+                entity.HasIndex(e => e.RegionId)
+                    .HasName("region_id");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Fullname)
+                    .IsRequired()
+                    .HasColumnName("fullname")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.Nickname)
+                    .IsRequired()
+                    .HasColumnName("nickname")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.RegionId)
+                    .HasColumnName("region_id")
+                    .HasColumnType("int(11)");
+
+                entity.HasOne(d => d.Region)
+                    .WithMany(p => p.GameSystems)
+                    .HasForeignKey(d => d.RegionId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("game_systems_ibfk_1");
             });
 
             modelBuilder.Entity<ServerEvents>(entity =>
@@ -216,73 +263,63 @@ namespace DiscoveryApi.Models
                     .HasColumnType("varchar(24)");
 
                 entity.Property(e => e.SessionStart).HasColumnName("session_start");
+
+                //entity.HasMany(d => d.ServerSessionsDataConn)
+                //    .WithOne(p => p.Session)
+                //    .HasForeignKey(d => d.SessionId)
+                //    .OnDelete(DeleteBehavior.Restrict)
+                //    .HasConstraintName("server_sessions_data_conn_ibfk_1");
+           
             });
 
-            modelBuilder.Entity<ServerSessionsConndata>(entity =>
+            modelBuilder.Entity<ServerSessionsDataConn>(entity =>
             {
-                entity.HasKey(e => new { e.SessionId, e.SessionRec })
-                    .HasName("PK_server_sessions_conndata");
+                entity.ToTable("server_sessions_data_conn");
 
-                entity.ToTable("server_sessions_conndata");
+                entity.HasIndex(e => e.SessionId)
+                    .HasName("session_id");
 
-                entity.HasIndex(e => e.PlayerShip)
-                    .HasName("player_ship");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
 
-                entity.HasIndex(e => e.PlayerSystem)
-                    .HasName("player_system");
+                entity.Property(e => e.Lag)
+                    .HasColumnName("lag")
+                    .HasColumnType("int(11) unsigned");
+
+                entity.Property(e => e.Stamp).HasColumnName("stamp");
+
+                entity.Property(e => e.Loss)
+                    .HasColumnName("loss")
+                    .HasColumnType("int(11) unsigned");
+
+                entity.Property(e => e.Ping)
+                    .HasColumnName("ping")
+                    .HasColumnType("int(11) unsigned");
 
                 entity.Property(e => e.SessionId)
                     .HasColumnName("session_id")
-                    .HasColumnType("int(11) unsigned")
-                    .HasDefaultValueSql("0");
+                    .HasColumnType("int(11) unsigned");
 
-                entity.Property(e => e.SessionRec)
-                    .HasColumnName("session_rec")
-                    .HasDefaultValueSql("0000-00-00 00:00:00");
-
-                entity.Property(e => e.PlayerLag)
-                    .HasColumnName("player_lag")
-                    .HasColumnType("int(6) unsigned");
-
-                entity.Property(e => e.PlayerLoss)
-                    .HasColumnName("player_loss")
-                    .HasColumnType("int(6) unsigned");
-
-                entity.Property(e => e.PlayerPing)
-                    .HasColumnName("player_ping")
-                    .HasColumnType("int(6) unsigned");
-
-                entity.Property(e => e.PlayerShip)
+                entity.Property(e => e.Ship)
                     .IsRequired()
-                    .HasColumnName("player_ship")
+                    .HasColumnName("ship")
                     .HasColumnType("varchar(255)");
 
-                entity.Property(e => e.PlayerSystem)
+                entity.Property(e => e.Location)
                     .IsRequired()
-                    .HasColumnName("player_system")
+                    .HasColumnName("location")
                     .HasColumnType("varchar(255)");
-            });
 
-            modelBuilder.Entity<ServerSessionsSystems>(entity =>
-            {
-                entity.HasKey(e => new { e.SessionId, e.SystemId, e.VisitDate })
-                    .HasName("PK_server_sessions_systems");
+                entity.Property(e => e.Duration)
+                    .HasColumnName("duration")
+                    .HasColumnType("int(11) unsigned");
 
-                entity.ToTable("server_sessions_systems");
-
-                entity.Property(e => e.SessionId)
-                    .HasColumnName("session_id")
-                    .HasColumnType("int(11)");
-
-                entity.Property(e => e.SystemId)
-                    .HasColumnName("system_id")
-                    .HasColumnType("varchar(36)");
-
-                entity.Property(e => e.VisitDate).HasColumnName("visit_date");
-
-                entity.Property(e => e.VisitDuration)
-                    .HasColumnName("visit_duration")
-                    .HasColumnType("int(11)");
+                entity.HasOne(d => d.Session)
+                    .WithMany(p => p.ServerSessionsDataConn)
+                    .HasForeignKey(d => d.SessionId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("server_sessions_data_conn_ibfk_1");
             });
         }
     }
