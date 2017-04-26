@@ -17,8 +17,8 @@ CREATE TABLE server_sessions_data_conn(
 CREATE TABLE regions(
   id int(11) NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
-  PRIMARY KEY (id),
-)
+  PRIMARY KEY (id)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 CREATE TABLE systems(
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -27,4 +27,4 @@ CREATE TABLE systems(
   name varchar(255) NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (region_id) REFERENCES regions(id)
-)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;

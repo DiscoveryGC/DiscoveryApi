@@ -11,8 +11,8 @@ using Microsoft.Extensions.Options;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Globalization;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using DiscoveryApi.Utils;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -21,6 +21,8 @@ namespace DiscoveryApi.Controllers
     [Route("api/[controller]")]
     public class UpdateController : Controller
     {
+        
+
         private readonly apiContext context;
         private readonly IOptions<ConfigModel> config;
         public UpdateController(apiContext _context, IOptions<ConfigModel> _config)
@@ -30,7 +32,7 @@ namespace DiscoveryApi.Controllers
         }
 
         // GET: /<controller>/
-        [HttpGet, Route("{key}")]
+        [HttpGet, Route("UpdateData/{key}")]
         public JsonResult Index(string key)
         {
             var model = new UpdateModel();
@@ -81,8 +83,8 @@ namespace DiscoveryApi.Controllers
 
             //We are done receiving the data, we can now update our database
             //We are more likely to have a successful request
-            
-            if (Success)
+
+            if (Success && Result.Timestamp != null && Result.Timestamp > CacheManager.Instance.LastUpdate)
             {
                 List<string> ProcessedPlayers = new List<string>();
                 var ActivePlayers = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => !c.SessionEnd.HasValue).ToList();
@@ -104,7 +106,7 @@ namespace DiscoveryApi.Controllers
                             item.PlayerLossAvg = (int)item.ServerSessionsDataConn.Average(c => c.Loss);
                             item.PlayerPingAvg = (int)item.ServerSessionsDataConn.Average(c => c.Ping);
                             item.PlayerLastShip = item.ServerSessionsDataConn.LastOrDefault().Ship;
-                            item.ServerSessionsDataConn.LastOrDefault().Duration += (int)Diff.TotalSeconds; 
+                            item.ServerSessionsDataConn.LastOrDefault().Duration += (int)Diff.TotalSeconds;
                         }
                     }
                     else
@@ -171,10 +173,32 @@ namespace DiscoveryApi.Controllers
                     system.Loss = item.Loss;
                     system.Ping = item.Ping;
 
-                    Session.ServerSessionsDataConn.Add(system);                   
+                    Session.ServerSessionsDataConn.Add(system);
+                }
+
+                //Update the player count, or alternatively create a new entry
+                var time = new DateTime(Result.Timestamp.Year, Result.Timestamp.Month, Result.Timestamp.Day, Result.Timestamp.Hour, 0, 0);
+                var entry = context.ServerPlayercounts.SingleOrDefault(c => c.Date == time);
+
+                if (entry != null)
+                {
+                    if (Result.Players.Count > entry.PlayerCount)
+                    {
+                        entry.PlayerCount = (short)Result.Players.Count;
+                    }
+                }
+                else
+                {
+                    var newentry = new ServerPlayercounts();
+                    newentry.Date = time;
+                    newentry.PlayerCount = (short)Result.Players.Count;
+                    context.ServerPlayercounts.Add(newentry);
                 }
 
                 context.SaveChanges();
+                //Update our internal timestamp
+                CacheManager.Instance.LastUpdate = Result.Timestamp;
+
                 model.Error = "OK";
                 return Json(model);
             }
@@ -190,7 +214,73 @@ namespace DiscoveryApi.Controllers
                 context.SaveChanges();
                 model.Error = Ressources.ApiResource.UpdateRequestFailed;
                 return Json(model);
-            }    
+            }
+        }
+
+        [HttpGet, Route("CollatePlayerCounts/{key}")]
+        public string CollatePlayerCounts(string key)
+        {
+            if (!isValidKey(key))
+            {
+                return "NO";
+            }
+
+            //This is dumb as hell but we have to do it 
+            //Get all player data
+
+            var data = context.ServerPlayercounts.OrderBy(c => c.Date).ToList();
+            if (data.Count > 0)
+            {
+                DateTime FirstTime = data.First().Date;
+                //Make a proper date
+                DateTime LastTime = new DateTime(FirstTime.Year, FirstTime.Month, FirstTime.Day, FirstTime.Hour, 0, 0);
+                List<UpdatePlayerCountStruct> NewData = new List<UpdatePlayerCountStruct>();
+                foreach (var item in data)
+                {
+                    if (item.Date >= LastTime.AddHours(1))
+                    {
+                        //There is likely to be huge gaps due to downtimes, so we have to consider it.
+                        LastTime = new DateTime(item.Date.Year, item.Date.Month, item.Date.Day, item.Date.Hour, 0, 0);
+                        NewData.Add(new UpdatePlayerCountStruct { Date = LastTime, Count = item.PlayerCount });
+                    }
+                    else
+                    {
+                        //Check the current value or create it if it's the first item
+                        if (NewData.Any(c => c.Date == LastTime))
+                        {
+                            var it = NewData.SingleOrDefault(c => c.Date == LastTime);
+                            if (item.PlayerCount > it.Count)
+                            {
+                                it.Count = item.PlayerCount;
+                            }
+                        }
+                        else
+                        {
+                            //Create the initial record
+                            NewData.Add(new UpdatePlayerCountStruct { Date = LastTime, Count = item.PlayerCount });
+                        }
+                    }
+                }
+
+                //Destroy all current data
+                context.ServerPlayercounts.RemoveRange(context.ServerPlayercounts.ToList());
+                context.SaveChanges();
+
+                List<ServerPlayercounts> NewEntities = new List<ServerPlayercounts>();
+                //Insert our new data
+                foreach (var item in NewData)
+                {
+                    var it = new ServerPlayercounts();
+                    it.Date = item.Date;
+                    it.PlayerCount = item.Count;
+                    NewEntities.Add(it);
+                }
+                context.AddRange(NewEntities);
+                context.SaveChanges();
+                return "OK";
+            }
+
+            return "Nothing.";
         }
 
         private bool isValidKey(string key)

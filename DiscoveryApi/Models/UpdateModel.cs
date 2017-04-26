@@ -44,4 +44,10 @@ namespace DiscoveryApi.Models
         public int Loss { get; set; }
         public int Lag { get; set; }
     }
+
+    public struct UpdatePlayerCountStruct
+    {
+        public DateTime Date { get; set; }
+        public short Count { get; set; }
+    }
 }
