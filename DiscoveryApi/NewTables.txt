@@ -28,3 +28,26 @@ CREATE TABLE systems(
   PRIMARY KEY (id),
   FOREIGN KEY (region_id) REFERENCES regions(id)
 ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE factions(
+  id int(11) NOT NULL AUTO_INCREMENT,
+  nickname varchar(255) NOT NULL,
+  name varchar(255) NOT NULL,
+  PRIMARY KEY (id)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE ships(
+  id int(11) NOT NULL AUTO_INCREMENT,
+  nickname varchar(255) NOT NULL,
+  name varchar(255) NOT NULL,
+  PRIMARY KEY (id)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE factions_id(
+  id int(11) NOT NULL AUTO_INCREMENT,
+  item varchar(255) NOT NULL,
+  faction varchar(255) NOT NULL,
+  PRIMARY KEY (id)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+ALTER TABLE server_factions ADD id_tracking BOOL NOT NULL DEFAULT 0

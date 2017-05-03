@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using DiscoveryApi.Utils;
+using Microsoft.Extensions.Logging;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -21,14 +22,15 @@ namespace DiscoveryApi.Controllers
     [Route("api/[controller]")]
     public class UpdateController : Controller
     {
-        
 
+        private readonly ILogger<UpdateController> logger;
         private readonly apiContext context;
         private readonly IOptions<ConfigModel> config;
-        public UpdateController(apiContext _context, IOptions<ConfigModel> _config)
+        public UpdateController(apiContext _context, IOptions<ConfigModel> _config, ILogger<UpdateController> _logger)
         {
             context = _context;
             config = _config;
+            logger = _logger;
         }
 
         // GET: /<controller>/
@@ -36,9 +38,10 @@ namespace DiscoveryApi.Controllers
         public JsonResult Index(string key)
         {
             var model = new UpdateModel();
-
+            
             if (!isValidKey(key))
             {
+                logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
                 model.Error = Ressources.ApiResource.UnauthorizedAccess;
                 return Json(model);
             }
@@ -120,7 +123,7 @@ namespace DiscoveryApi.Controllers
                             last_system.Lag = (last_system.Lag + PlayerInfo.Lag) / 2;
                             last_system.Loss = (last_system.Loss + PlayerInfo.Loss) / 2;
                             last_system.Ping = (last_system.Ping + PlayerInfo.Ping) / 2;
-                            last_system.Ship = "test";
+                            last_system.Ship = PlayerInfo.Ship;
                             last_system.Duration += (int)Diff.TotalSeconds;
                             last_system.Stamp = Result.Timestamp;
                         }
@@ -200,6 +203,8 @@ namespace DiscoveryApi.Controllers
                 CacheManager.Instance.LastUpdate = Result.Timestamp;
 
                 model.Error = "OK";
+                logger.LogInformation("Successfully retrieved and parsed the server data");
+
                 return Json(model);
             }
             else
@@ -213,6 +218,7 @@ namespace DiscoveryApi.Controllers
 
                 context.SaveChanges();
                 model.Error = Ressources.ApiResource.UpdateRequestFailed;
+                logger.LogWarning("Failed to retrieve the server data");
                 return Json(model);
             }
         }

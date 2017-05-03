@@ -13,5 +13,6 @@ namespace DiscoveryApi.Models
     public class ApiConfigModel
     {
         public string JsonLocation { get; set; }
+        public string LogLocation { get; set; }
     }
 }

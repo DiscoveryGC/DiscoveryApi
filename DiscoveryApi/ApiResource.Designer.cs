@@ -62,6 +62,15 @@ namespace Ressources {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à The database is currently unavailable..
+        /// </summary>
+        public static string DatabaseUnavailable {
+            get {
+                return ResourceManager.GetString("DatabaseUnavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à You are not allowed to do this..
         /// </summary>
         public static string UnauthorizedAccess {

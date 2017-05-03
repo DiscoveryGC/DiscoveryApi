@@ -9,14 +9,17 @@ namespace DiscoveryApi.DAL
     public partial class apiContext : DbContext
     {
         public virtual DbSet<ApiKeys> ApiKeys { get; set; }
-        public virtual DbSet<GameRegions> GameRegions { get; set; }
-        public virtual DbSet<GameSystems> GameSystems { get; set; }
         public virtual DbSet<ServerEvents> ServerEvents { get; set; }
         public virtual DbSet<ServerFactions> ServerFactions { get; set; }
         public virtual DbSet<ServerNames> ServerNames { get; set; }
         public virtual DbSet<ServerPlayercounts> ServerPlayercounts { get; set; }
         public virtual DbSet<ServerSessions> ServerSessions { get; set; }
         public virtual DbSet<ServerSessionsDataConn> ServerSessionsDataConn { get; set; }
+        public virtual DbSet<Factions> Factions { get; set; }
+        public virtual DbSet<FactionsId> FactionsId { get; set; }
+        public virtual DbSet<Regions> Regions { get; set; }
+        public virtual DbSet<Ships> Ships { get; set; }
+        public virtual DbSet<Systems> Systems { get; set; }
 
         public static IConfigurationRoot Configuration { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -54,23 +57,80 @@ namespace DiscoveryApi.DAL
                     .HasColumnType("varchar(255)");
             });
 
-            modelBuilder.Entity<GameRegions>(entity =>
+            modelBuilder.Entity<Factions>(entity =>
             {
-                entity.ToTable("game_regions");
+                entity.ToTable("factions");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
                     .HasColumnType("int(11)");
 
-                entity.Property(e => e.Fullname)
+                entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasColumnName("fullname")
+                    .HasColumnName("name")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.Nickname)
+                    .IsRequired()
+                    .HasColumnName("nickname")
                     .HasColumnType("varchar(255)");
             });
 
-            modelBuilder.Entity<GameSystems>(entity =>
+            modelBuilder.Entity<FactionsId>(entity =>
             {
-                entity.ToTable("game_systems");
+                entity.ToTable("factions_id");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Faction)
+                    .IsRequired()
+                    .HasColumnName("faction")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.Item)
+                    .IsRequired()
+                    .HasColumnName("item")
+                    .HasColumnType("varchar(255)");
+            });
+
+            modelBuilder.Entity<Regions>(entity =>
+            {
+                entity.ToTable("regions");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasColumnName("name")
+                    .HasColumnType("varchar(255)");
+            });
+
+            modelBuilder.Entity<Ships>(entity =>
+            {
+                entity.ToTable("ships");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasColumnName("name")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.Nickname)
+                    .IsRequired()
+                    .HasColumnName("nickname")
+                    .HasColumnType("varchar(255)");
+            });
+
+            modelBuilder.Entity<Systems>(entity =>
+            {
+                entity.ToTable("systems");
 
                 entity.HasIndex(e => e.RegionId)
                     .HasName("region_id");
@@ -79,9 +139,9 @@ namespace DiscoveryApi.DAL
                     .HasColumnName("id")
                     .HasColumnType("int(11)");
 
-                entity.Property(e => e.Fullname)
+                entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasColumnName("fullname")
+                    .HasColumnName("name")
                     .HasColumnType("varchar(255)");
 
                 entity.Property(e => e.Nickname)
@@ -94,10 +154,10 @@ namespace DiscoveryApi.DAL
                     .HasColumnType("int(11)");
 
                 entity.HasOne(d => d.Region)
-                    .WithMany(p => p.GameSystems)
+                    .WithMany(p => p.Systems)
                     .HasForeignKey(d => d.RegionId)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("game_systems_ibfk_1");
+                    .HasConstraintName("systems_ibfk_1");
             });
 
             modelBuilder.Entity<ServerEvents>(entity =>

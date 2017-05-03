@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using System.IO;
 using DiscoveryApi.Models;
 using DiscoveryApi.DAL;
+using Serilog;
 
 namespace DiscoveryApi
 {
@@ -25,6 +26,11 @@ namespace DiscoveryApi
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Seq(Configuration.GetSection("ApiSettings").GetValue<string>("LogLocation"))
+                .CreateLogger();
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -46,6 +52,7 @@ namespace DiscoveryApi
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            loggerFactory.AddSerilog();
 
             app.UseMvc(routes =>
             {
