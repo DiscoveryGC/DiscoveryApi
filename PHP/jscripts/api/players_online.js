@@ -18,23 +18,23 @@ $(document).ready(function(){
           row_e.classList.add("api_player_row");
           
           var name_e = document.createElement("td");
-          name_e.innerHTML = item.Name;
+          name_e.innerText = item.Name;
           row_e.appendChild(name_e);
           
           var system_e = document.createElement("td");
-          system_e.innerHTML = item.System;
+          system_e.innerText = item.System;
           row_e.appendChild(system_e);
           
           var region_e = document.createElement("td");
-          region_e.innerHTML = item.Region;
+          region_e.innerText = item.Region;
           row_e.appendChild(region_e);
           
           var ping_e = document.createElement("td");
-          ping_e.innerHTML = item.Ping;
+          ping_e.innerText = item.Ping;
           row_e.appendChild(ping_e);
           
           var time_e = document.createElement("td");
-          time_e.innerHTML = item.Time;
+          time_e.innerText = item.Time;
           row_e.appendChild(time_e);
           
           table_tag.appendChild(row_e);          
