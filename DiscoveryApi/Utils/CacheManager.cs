@@ -26,29 +26,29 @@ namespace DiscoveryApi.Utils
             }
         }
 
-        public DateTime LastUpdate;
+        public DateTime LastUpdate = new DateTime(0);
+        public int MaxRetry = 10;
+        public int Retry = 0;
 
         //Available caches
         public string PlayerOnlineCache;
-        public DateTime LastPlayerOnlineCache;
-        public const int LastPlayerOnlineCacheDuration = 60;
+        public DateTime LastPlayerOnlineCache = new DateTime(0);
+        public int LastPlayerOnlineCacheDuration = 60;
         
         public string PlayerCountCache;
-        public DateTime LastPlayerCountCache;
-        public const int LastPlayerCountCacheDuration = 900;
+        public DateTime LastPlayerCountCache = new DateTime(0);
+        public int LastPlayerCountCacheDuration = 900;
 
         public string FactionGlobalActivityCache;
-        public DateTime LastFactionGlobalActivityCache;
-        public const int FactionGlobalActivityDuration = 900;
+        public DateTime LastFactionGlobalActivityCache = new DateTime(0);
+        public int FactionGlobalActivityDuration = 900;
 
-        public List<FactionCache> FactionIndividualActivityCache;
-        public const int FactionIndividualCacheDuration = 900;
+        public List<FactionCache> FactionIndividualActivityCache = new List<FactionCache>();
+        public int FactionIndividualCacheDuration = 900;
 
         public CacheManager()
         {
-            //Initialize the cache objects
-            FactionIndividualActivityCache = new List<FactionCache>();
-            LastUpdate = new DateTime(0);
+ 
         }
     }
 }

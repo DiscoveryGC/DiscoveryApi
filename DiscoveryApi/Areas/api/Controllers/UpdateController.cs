@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscoveryApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Area("api"), Route("[area]/[controller]/[action]")]
     public class UpdateController : Controller
     {
 
@@ -34,8 +34,8 @@ namespace DiscoveryApi.Controllers
         }
 
         // GET: /<controller>/
-        [HttpGet, Route("UpdateData/{key}")]
-        public JsonResult Index(string key)
+        [HttpGet("{key}")]
+        public JsonResult UpdateData(string key)
         {
             var model = new UpdateModel();
             
@@ -46,6 +46,7 @@ namespace DiscoveryApi.Controllers
                 return Json(model);
             }
 
+            CacheManager cm = CacheManager.Instance;
             //Get the current data
             string Url = config.Value.ApiSettings.JsonLocation;
             UpdateResponseModel Result = new UpdateResponseModel();
@@ -68,6 +69,9 @@ namespace DiscoveryApi.Controllers
                     DateTime dt = DateTime.ParseExact(Dic.Timestamp, "yyyyMMddTHHmmss", CultureInfo.InvariantCulture);
                     Result.Timestamp = dt;
 
+                    if (Result.Timestamp > CacheManager.Instance.LastUpdate)
+                        cm.Retry = 0;
+
                     foreach (var item in Dic.Players)
                     {
                         var mdl = new UpdateResponsePlayerModel();
@@ -84,11 +88,22 @@ namespace DiscoveryApi.Controllers
                 }
             }
 
+            
+
             //We are done receiving the data, we can now update our database
             //We are more likely to have a successful request
 
-            if (Success && Result.Timestamp != null && Result.Timestamp > CacheManager.Instance.LastUpdate)
+            if (Success && Result.Timestamp != null && (cm.Retry < cm.MaxRetry))
             {
+                if (Result.Timestamp < CacheManager.Instance.LastUpdate)
+                {
+                    //This can happen often as the cron script and the server updates may not be in perfect sync
+                    cm.Retry = cm.Retry + 1;
+                    model.Error = Ressources.ApiResource.TimestampRenewTooSoon;
+                    logger.LogWarning("Server data has not yet been renewed");
+                    return Json(model);
+                }
+
                 List<string> ProcessedPlayers = new List<string>();
                 var ActivePlayers = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => !c.SessionEnd.HasValue).ToList();
                 //First, we're going to see if we have sessions to end or update
@@ -200,7 +215,7 @@ namespace DiscoveryApi.Controllers
 
                 context.SaveChanges();
                 //Update our internal timestamp
-                CacheManager.Instance.LastUpdate = Result.Timestamp;
+                cm.LastUpdate = DateTime.UtcNow;
 
                 model.Error = "OK";
                 logger.LogInformation("Successfully retrieved and parsed the server data");
@@ -213,7 +228,7 @@ namespace DiscoveryApi.Controllers
                 var ActivePlayers = context.ServerSessions.Where(c => !c.SessionEnd.HasValue).ToList();
                 foreach (var item in ActivePlayers)
                 {
-                    item.SessionEnd = DateTime.Now;
+                    item.SessionEnd = DateTime.UtcNow;
                 }
 
                 context.SaveChanges();
@@ -223,7 +238,7 @@ namespace DiscoveryApi.Controllers
             }
         }
 
-        [HttpGet, Route("CollatePlayerCounts/{key}")]
+        [HttpGet("{key}")]
         public string CollatePlayerCounts(string key)
         {
             if (!isValidKey(key))

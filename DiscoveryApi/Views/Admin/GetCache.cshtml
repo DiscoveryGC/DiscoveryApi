@@ -1,0 +1,20 @@
+@using DiscoveryApi.Models
+@model CacheDisplayModel
+@{
+    ViewData["Title"] = "GetCache";
+}
+
+<div class="row text-center">
+    <div class="col-md-12"><h2>Cache Status</h2></div>
+    <div class="col-md-12"><b>Last Data Update: </b>@Model.LastUpdate.ToString()</div>
+    <div class="col-md-12"><b>Retry: </b>@Model.RetryCount.ToString()/@Model.RetryMax.ToString()</div>
+</div>
+<br />
+<div class="card">
+    <div class="card-block">
+        <h4 class="card-title">Players Online</h4>
+        <h6 class="card-subtitle mb-2 text-muted">@Model.LastPlayerOnlineCache.ToString()</h6>
+        <div class="card-block"><pre>@Model.PlayerOnlineCache</pre></div>
+    </div>
+</div>
+

@@ -120,6 +120,9 @@
   <data name="DatabaseUnavailable" xml:space="preserve">
     <value>The database is currently unavailable.</value>
   </data>
+  <data name="TimestampRenewTooSoon" xml:space="preserve">
+    <value>Attempted to renew the data too soon, the server data is not yet updated.</value>
+  </data>
   <data name="UnauthorizedAccess" xml:space="preserve">
     <value>You are not allowed to do this.</value>
   </data>

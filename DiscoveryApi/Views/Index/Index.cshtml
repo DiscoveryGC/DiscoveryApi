@@ -2,6 +2,13 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+
 }
 
+
 Hello. Welcome to the Discovery API.
+
+<h5>Dev stuff</h5>
+<a class="btn btn-primary" target="_blank" href="@Url.Action("GetCache", new { controller = "Admin", key = "dev" })">Check Cache</a>
+<a class="btn btn-primary" target="_blank" href="@Url.Action("UpdateData", new { controller = "Update", area = "api", key = "dev" })">Update data</a>
+<a class="btn btn-primary" target="_blank" href="@Url.Action("GetPlayers", new { controller = "Online", area = "api", key = "dev" })">Get Online Players</a>

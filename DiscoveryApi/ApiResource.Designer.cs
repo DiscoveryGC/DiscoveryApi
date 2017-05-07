@@ -71,6 +71,15 @@ namespace Ressources {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Attempted to renew the data too soon, the server data is not yet updated..
+        /// </summary>
+        public static string TimestampRenewTooSoon {
+            get {
+                return ResourceManager.GetString("TimestampRenewTooSoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à You are not allowed to do this..
         /// </summary>
         public static string UnauthorizedAccess {
