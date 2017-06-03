@@ -88,8 +88,6 @@ namespace DiscoveryApi.Controllers
                 }
             }
 
-            
-
             //We are done receiving the data, we can now update our database
             //We are more likely to have a successful request
 
@@ -109,14 +107,14 @@ namespace DiscoveryApi.Controllers
                 //First, we're going to see if we have sessions to end or update
                 foreach (var item in ActivePlayers)
                 {
-                    var last_system = item.ServerSessionsDataConn.LastOrDefault();
+                    var last_system = item.ServerSessionsDataConn.OrderBy(c => c.Stamp).LastOrDefault();
                     TimeSpan Diff = Result.Timestamp - last_system.Stamp;
 
                     //Is the player still online?
                     if (!Result.Players.Any(c => c.Name == item.PlayerName))
                     {
                         //Nope, end the session and compile stats
-                        item.SessionEnd = DateTime.Now;
+                        item.SessionEnd = DateTime.UtcNow;
                         //We'll be able to remove these ternary operations later, but for now we have to do it as otherwise it will crash due to open sessions on the current database without any info about the new data tables
                         if (item.ServerSessionsDataConn.Count > 0)
                         {
@@ -132,7 +130,7 @@ namespace DiscoveryApi.Controllers
                         var PlayerInfo = Result.Players.SingleOrDefault(c => c.Name == item.PlayerName);
                         //We're moving the amount of entries to one per system change instead of one per minute. This will improve performance with minimal differences.
                         //Not checking for null because there is always at least one entry
-                        if (last_system.Location == PlayerInfo.System)
+                        if (last_system.Location.ToUpper() == PlayerInfo.System.ToUpper())
                         {
                             //The player hasn't changed systems. Update the current information.
                             last_system.Lag = (last_system.Lag + PlayerInfo.Lag) / 2;
@@ -238,71 +236,7 @@ namespace DiscoveryApi.Controllers
             }
         }
 
-        [HttpGet("{key}")]
-        public string CollatePlayerCounts(string key)
-        {
-            if (!isValidKey(key))
-            {
-                return "NO";
-            }
 
-            //This is dumb as hell but we have to do it 
-            //Get all player data
-
-            var data = context.ServerPlayercounts.OrderBy(c => c.Date).ToList();
-            if (data.Count > 0)
-            {
-                DateTime FirstTime = data.First().Date;
-                //Make a proper date
-                DateTime LastTime = new DateTime(FirstTime.Year, FirstTime.Month, FirstTime.Day, FirstTime.Hour, 0, 0);
-                List<UpdatePlayerCountStruct> NewData = new List<UpdatePlayerCountStruct>();
-                foreach (var item in data)
-                {
-                    if (item.Date >= LastTime.AddHours(1))
-                    {
-                        //There is likely to be huge gaps due to downtimes, so we have to consider it.
-                        LastTime = new DateTime(item.Date.Year, item.Date.Month, item.Date.Day, item.Date.Hour, 0, 0);
-                        NewData.Add(new UpdatePlayerCountStruct { Date = LastTime, Count = item.PlayerCount });
-                    }
-                    else
-                    {
-                        //Check the current value or create it if it's the first item
-                        if (NewData.Any(c => c.Date == LastTime))
-                        {
-                            var it = NewData.SingleOrDefault(c => c.Date == LastTime);
-                            if (item.PlayerCount > it.Count)
-                            {
-                                it.Count = item.PlayerCount;
-                            }
-                        }
-                        else
-                        {
-                            //Create the initial record
-                            NewData.Add(new UpdatePlayerCountStruct { Date = LastTime, Count = item.PlayerCount });
-                        }
-                    }
-                }
-
-                //Destroy all current data
-                context.ServerPlayercounts.RemoveRange(context.ServerPlayercounts.ToList());
-                context.SaveChanges();
-
-                List<ServerPlayercounts> NewEntities = new List<ServerPlayercounts>();
-                //Insert our new data
-                foreach (var item in NewData)
-                {
-                    var it = new ServerPlayercounts();
-                    it.Date = item.Date;
-                    it.PlayerCount = item.Count;
-                    NewEntities.Add(it);
-                }
-                context.AddRange(NewEntities);
-                context.SaveChanges();
-                return "OK";
-            }
-
-            return "Nothing.";
-        }
 
         private bool isValidKey(string key)
         {
@@ -310,6 +244,41 @@ namespace DiscoveryApi.Controllers
                 return true;
             else
                 return false;
+        }
+
+        [HttpGet("{key}")]
+        public string MakeOldFactionActivity(string key)
+        {
+            if (!isValidKey(key))
+            {
+                return "NO";
+            }
+
+            var OldActivity = context.ServerFactionsActivity.ToList();
+            var ServerFactions = context.ServerFactions.ToList();
+
+            //We will go as far as one year from now, should be enough
+            DateTime end = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date.ToUniversalTime();
+            DateTime start = end.AddYears(-1);
+
+            for (DateTime range_start = end.AddYears(-1); range_start < end; range_start = range_start.AddMonths(1))
+            {
+                DateTime range_end = new DateTime(range_start.Year, range_start.Month, DateTime.DaysInMonth(range_start.Year, range_start.Month), 23, 59, 59);
+                foreach (var item in ServerFactions)
+                {
+                    var activity = context.ServerSessions.Where(c => c.PlayerName.ToUpper().Contains(item.FactionTag.ToUpper())).ToList();
+                    if (activity.Count > 0)
+                    {
+                        long duration = 0;
+                        foreach (var session in activity)
+                        {
+
+                        }
+                    }
+                }
+            }
+
+            return "OK";
         }
     }
 }

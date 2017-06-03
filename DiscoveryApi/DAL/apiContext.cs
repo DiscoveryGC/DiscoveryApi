@@ -11,6 +11,7 @@ namespace DiscoveryApi.DAL
         public virtual DbSet<ApiKeys> ApiKeys { get; set; }
         public virtual DbSet<ServerEvents> ServerEvents { get; set; }
         public virtual DbSet<ServerFactions> ServerFactions { get; set; }
+        public virtual DbSet<ServerFactionsActivity> ServerFactionsActivity { get; set; }
         public virtual DbSet<ServerNames> ServerNames { get; set; }
         public virtual DbSet<ServerPlayercounts> ServerPlayercounts { get; set; }
         public virtual DbSet<ServerSessions> ServerSessions { get; set; }
@@ -197,14 +198,16 @@ namespace DiscoveryApi.DAL
 
             modelBuilder.Entity<ServerFactions>(entity =>
             {
-                entity.HasKey(e => e.FactionTag)
-                    .HasName("PK_server_factions");
-
                 entity.ToTable("server_factions");
 
-                entity.Property(e => e.FactionTag)
-                    .HasColumnName("faction_tag")
-                    .HasColumnType("varchar(24)");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Active)
+                    .HasColumnName("active")
+                    .HasColumnType("tinyint(1)")
+                    .HasDefaultValueSql("1");
 
                 entity.Property(e => e.FactionAdded)
                     .HasColumnName("faction_added")
@@ -215,6 +218,16 @@ namespace DiscoveryApi.DAL
                     .HasColumnName("faction_name")
                     .HasColumnType("text");
 
+                entity.Property(e => e.FactionTag)
+                    .IsRequired()
+                    .HasColumnName("faction_tag")
+                    .HasColumnType("varchar(24)");
+
+                entity.Property(e => e.IdTracking)
+                    .HasColumnName("id_tracking")
+                    .HasColumnType("tinyint(1)")
+                    .HasDefaultValueSql("0");
+
                 entity.Property(e => e.ItemEquipId)
                     .IsRequired()
                     .HasColumnName("item_equip_id")
@@ -224,6 +237,34 @@ namespace DiscoveryApi.DAL
                     .HasColumnName("warned")
                     .HasColumnType("tinyint(1)")
                     .HasDefaultValueSql("0");
+            });
+
+            modelBuilder.Entity<ServerFactionsActivity>(entity =>
+            {
+                entity.ToTable("server_factions_activity");
+
+                entity.HasIndex(e => e.FactionId)
+                    .HasName("faction_id");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Duration)
+                    .HasColumnName("duration")
+                    .HasColumnType("bigint(20)");
+
+                entity.Property(e => e.FactionId)
+                    .HasColumnName("faction_id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Stamp).HasColumnName("stamp");
+
+                entity.HasOne(d => d.Faction)
+                    .WithMany(p => p.ServerFactionsActivity)
+                    .HasForeignKey(d => d.FactionId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("server_factions_activity_ibfk_1");
             });
 
             modelBuilder.Entity<ServerNames>(entity =>

@@ -59,7 +59,7 @@ namespace DiscoveryApi.Controllers
 
                     TimeSpan span = now.Subtract(item.SessionStart);
                     if (span.Hours > 0)
-                        player.Time = span.Hours.ToString() + "h" + span.Minutes.ToString();
+                        player.Time = span.Hours.ToString() + "h" + (span.Minutes < 10 ? "0" : "") + span.Minutes.ToString();
                     else
                         player.Time = span.Minutes.ToString() + "m";
 
@@ -90,6 +90,40 @@ namespace DiscoveryApi.Controllers
             }
 
             return Json(cm.PlayerOnlineCache);
+        }
+
+        [HttpGet("{key}")]
+        public JsonResult GetFactionSummary(string key)
+        {
+            var model = new FactionSummaryModel();
+            if (!isValidKey(key))
+            {
+                logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
+                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                return Json(model);
+            }
+
+            CacheManager cm = CacheManager.Instance;
+
+            //Check if we have to renew the cache
+            var now = DateTime.UtcNow;
+            if (cm.LastFactionGlobalActivityCache.AddSeconds(cm.FactionGlobalActivityDuration) < now)
+            {
+                model.Timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");
+                model.Factions = new List<FactionSummarySingle>();
+
+                var Factions = context.ServerFactions.ToList();
+
+                foreach (var item in Factions)
+                {
+                    //Get all sessions independent of name, we don't care for individual players
+                }
+
+                cm.FactionGlobalActivityCache = JsonConvert.SerializeObject(model);
+                cm.LastFactionGlobalActivityCache = DateTime.UtcNow;
+            }
+
+            return Json(cm.FactionGlobalActivityCache);
         }
 
         private bool isValidKey(string key)

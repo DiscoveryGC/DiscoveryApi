@@ -8,7 +8,20 @@
 
 Hello. Welcome to the Discovery API.
 
-<h5>Dev stuff</h5>
-<a class="btn btn-primary" target="_blank" href="@Url.Action("GetCache", new { controller = "Admin", key = "dev" })">Check Cache</a>
-<a class="btn btn-primary" target="_blank" href="@Url.Action("UpdateData", new { controller = "Update", area = "api", key = "dev" })">Update data</a>
-<a class="btn btn-primary" target="_blank" href="@Url.Action("GetPlayers", new { controller = "Online", area = "api", key = "dev" })">Get Online Players</a>
+<h5>Data</h5>
+<div class="row">
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("GetPlayers", new { controller = "Online", area = "api", key = "dev" })">Get Online Players</a>
+</div>
+
+<h5>Admin</h5>
+<div class="row">
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("UpdateData", new { controller = "Update", area = "api", key = "dev" })">Update data</a>
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("GetCache", new { controller = "Admin", key = "dev" })">Check Cache</a>
+</div>
+
+<h5>Maintenance</h5>
+<div class="row">
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("FixConnData", new { controller = "Maintenance", key = "dev" })">Fix Conn Data</a>
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("CollateConnData", new { controller = "Maintenance", key = "dev" })">Collate Conn Data</a>
+</div>
+

@@ -50,4 +50,16 @@ CREATE TABLE factions_id(
   PRIMARY KEY (id)
 ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
-ALTER TABLE server_factions ADD id_tracking BOOL NOT NULL DEFAULT 0
+ALTER TABLE server_factions ADD id_tracking BOOL NOT NULL DEFAULT 0;
+ALTER TABLE server_factions ADD active BOOL NOT NULL DEFAULT 1;
+ALTER TABLE server_factions DROP PRIMARY KEY;
+ALTER TABLE server_factions ADD id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY;
+
+CREATE TABLE server_factions_activity(
+   id int(11) NOT NULL AUTO_INCREMENT,
+   faction_id int(11) NOT NULL,
+   stamp date NOT NULL,
+   duration bigint NOT NULL,
+   PRIMARY KEY (id),
+   FOREIGN KEY (faction_id) REFERENCES server_factions(id)
+) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
