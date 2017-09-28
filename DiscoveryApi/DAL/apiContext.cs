@@ -9,16 +9,16 @@ namespace DiscoveryApi.DAL
     public partial class apiContext : DbContext
     {
         public virtual DbSet<ApiKeys> ApiKeys { get; set; }
-        public virtual DbSet<ServerEvents> ServerEvents { get; set; }
-        public virtual DbSet<ServerFactions> ServerFactions { get; set; }
-        public virtual DbSet<ServerFactionsActivity> ServerFactionsActivity { get; set; }
-        public virtual DbSet<ServerNames> ServerNames { get; set; }
-        public virtual DbSet<ServerPlayercounts> ServerPlayercounts { get; set; }
-        public virtual DbSet<ServerSessions> ServerSessions { get; set; }
-        public virtual DbSet<ServerSessionsDataConn> ServerSessionsDataConn { get; set; }
         public virtual DbSet<Factions> Factions { get; set; }
         public virtual DbSet<FactionsId> FactionsId { get; set; }
         public virtual DbSet<Regions> Regions { get; set; }
+        public virtual DbSet<ServerEvents> ServerEvents { get; set; }
+        public virtual DbSet<ServerFactions> ServerFactions { get; set; }
+        public virtual DbSet<ServerFactionsActivity> ServerFactionsActivity { get; set; }
+        public virtual DbSet<ServerPlayercounts> ServerPlayercounts { get; set; }
+        public virtual DbSet<ServerSessions> ServerSessions { get; set; }
+        public virtual DbSet<ServerSessionsDataConn> ServerSessionsDataConn { get; set; }
+        public virtual DbSet<ServerSessionsSystems> ServerSessionsSystems { get; set; }
         public virtual DbSet<Ships> Ships { get; set; }
         public virtual DbSet<Systems> Systems { get; set; }
 
@@ -110,57 +110,6 @@ namespace DiscoveryApi.DAL
                     .HasColumnType("varchar(255)");
             });
 
-            modelBuilder.Entity<Ships>(entity =>
-            {
-                entity.ToTable("ships");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id")
-                    .HasColumnType("int(11)");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasColumnName("name")
-                    .HasColumnType("varchar(255)");
-
-                entity.Property(e => e.Nickname)
-                    .IsRequired()
-                    .HasColumnName("nickname")
-                    .HasColumnType("varchar(255)");
-            });
-
-            modelBuilder.Entity<Systems>(entity =>
-            {
-                entity.ToTable("systems");
-
-                entity.HasIndex(e => e.RegionId)
-                    .HasName("region_id");
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id")
-                    .HasColumnType("int(11)");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasColumnName("name")
-                    .HasColumnType("varchar(255)");
-
-                entity.Property(e => e.Nickname)
-                    .IsRequired()
-                    .HasColumnName("nickname")
-                    .HasColumnType("varchar(255)");
-
-                entity.Property(e => e.RegionId)
-                    .HasColumnName("region_id")
-                    .HasColumnType("int(11)");
-
-                entity.HasOne(d => d.Region)
-                    .WithMany(p => p.Systems)
-                    .HasForeignKey(d => d.RegionId)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("systems_ibfk_1");
-            });
-
             modelBuilder.Entity<ServerEvents>(entity =>
             {
                 entity.ToTable("server_events");
@@ -211,7 +160,7 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.FactionAdded)
                     .HasColumnName("faction_added")
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    .HasDefaultValueSql("current_timestamp()");
 
                 entity.Property(e => e.FactionName)
                     .IsRequired()
@@ -252,7 +201,11 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.Duration)
                     .HasColumnName("duration")
-                    .HasColumnType("bigint(20)");
+                    .HasColumnType("bigint(20) unsigned");
+
+                entity.Property(e => e.Duration2)
+                    .HasColumnName("duration2")
+                    .HasColumnType("bigint(20) unsigned");
 
                 entity.Property(e => e.FactionId)
                     .HasColumnName("faction_id")
@@ -265,31 +218,6 @@ namespace DiscoveryApi.DAL
                     .HasForeignKey(d => d.FactionId)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("server_factions_activity_ibfk_1");
-            });
-
-            modelBuilder.Entity<ServerNames>(entity =>
-            {
-                entity.HasKey(e => e.Nickname)
-                    .HasName("PK_server_names");
-
-                entity.ToTable("server_names");
-
-                entity.HasIndex(e => e.Category)
-                    .HasName("category");
-
-                entity.Property(e => e.Nickname)
-                    .HasColumnName("nickname")
-                    .HasColumnType("varchar(255)");
-
-                entity.Property(e => e.Category)
-                    .IsRequired()
-                    .HasColumnName("category")
-                    .HasColumnType("varchar(255)");
-
-                entity.Property(e => e.NameEn)
-                    .IsRequired()
-                    .HasColumnName("name_en")
-                    .HasColumnType("text");
             });
 
             modelBuilder.Entity<ServerPlayercounts>(entity =>
@@ -364,13 +292,6 @@ namespace DiscoveryApi.DAL
                     .HasColumnType("varchar(24)");
 
                 entity.Property(e => e.SessionStart).HasColumnName("session_start");
-
-                //entity.HasMany(d => d.ServerSessionsDataConn)
-                //    .WithOne(p => p.Session)
-                //    .HasForeignKey(d => d.SessionId)
-                //    .OnDelete(DeleteBehavior.Restrict)
-                //    .HasConstraintName("server_sessions_data_conn_ibfk_1");
-           
             });
 
             modelBuilder.Entity<ServerSessionsDataConn>(entity =>
@@ -384,11 +305,18 @@ namespace DiscoveryApi.DAL
                     .HasColumnName("id")
                     .HasColumnType("int(11)");
 
+                entity.Property(e => e.Duration)
+                    .HasColumnName("duration")
+                    .HasColumnType("int(11) unsigned");
+
                 entity.Property(e => e.Lag)
                     .HasColumnName("lag")
                     .HasColumnType("int(11) unsigned");
 
-                entity.Property(e => e.Stamp).HasColumnName("stamp");
+                entity.Property(e => e.Location)
+                    .IsRequired()
+                    .HasColumnName("location")
+                    .HasColumnType("varchar(255)");
 
                 entity.Property(e => e.Loss)
                     .HasColumnName("loss")
@@ -407,20 +335,87 @@ namespace DiscoveryApi.DAL
                     .HasColumnName("ship")
                     .HasColumnType("varchar(255)");
 
-                entity.Property(e => e.Location)
-                    .IsRequired()
-                    .HasColumnName("location")
-                    .HasColumnType("varchar(255)");
-
-                entity.Property(e => e.Duration)
-                    .HasColumnName("duration")
-                    .HasColumnType("int(11) unsigned");
+                entity.Property(e => e.Stamp).HasColumnName("stamp");
 
                 entity.HasOne(d => d.Session)
                     .WithMany(p => p.ServerSessionsDataConn)
                     .HasForeignKey(d => d.SessionId)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("server_sessions_data_conn_ibfk_1");
+            });
+
+            modelBuilder.Entity<ServerSessionsSystems>(entity =>
+            {
+                entity.HasKey(e => new { e.SessionId, e.SystemId, e.VisitDate })
+                    .HasName("PK_server_sessions_systems");
+
+                entity.ToTable("server_sessions_systems");
+
+                entity.Property(e => e.SessionId)
+                    .HasColumnName("session_id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.SystemId)
+                    .HasColumnName("system_id")
+                    .HasColumnType("varchar(36)");
+
+                entity.Property(e => e.VisitDate).HasColumnName("visit_date");
+
+                entity.Property(e => e.VisitDuration)
+                    .HasColumnName("visit_duration")
+                    .HasColumnType("int(11)");
+            });
+
+            modelBuilder.Entity<Ships>(entity =>
+            {
+                entity.ToTable("ships");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasColumnName("name")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.Nickname)
+                    .IsRequired()
+                    .HasColumnName("nickname")
+                    .HasColumnType("varchar(255)");
+            });
+
+            modelBuilder.Entity<Systems>(entity =>
+            {
+                entity.ToTable("systems");
+
+                entity.HasIndex(e => e.RegionId)
+                    .HasName("region_id");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasColumnName("name")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.Nickname)
+                    .IsRequired()
+                    .HasColumnName("nickname")
+                    .HasColumnType("varchar(255)");
+
+                entity.Property(e => e.RegionId)
+                    .HasColumnName("region_id")
+                    .HasColumnType("int(11)")
+                    .HasDefaultValueSql("1");
+
+                entity.HasOne(d => d.Region)
+                    .WithMany(p => p.Systems)
+                    .HasForeignKey(d => d.RegionId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("systems_ibfk_1");
             });
         }
     }

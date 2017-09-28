@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 
 // Including global.php gives us access to a bunch of MyBB functions and variables
 include('./global.php');
-$api_key = "cancer";
+$api_key = "oflsareinsanepeople";
 $api_location = "http://localhost:5000/";
 
 
@@ -40,13 +40,38 @@ if ($mybb->input['action'] == "players_online") {
     eval("\$page = \"".$templates->get("disco")."\";"); 
     output_page($page);
 }
+else if ($mybb->input['action'] == "faction_summary") {
+    add_breadcrumb("Faction Activity Summary", THIS_SCRIPT . "?action=faction_summary");
+    if(!$mybb->user['uid'] || $mybb->user['uid'] < 1 )
+    {
+      error_no_permission();
+    }
+    
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $api_location . "api/Online/GetFactionSummary/" . $api_key);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $json_data = curl_exec($curl);
+    curl_close($curl);
+    
+    //var_dump($json_data);
+    if ($json_data != false)
+     {
+        eval("\$disco_body = \"".$templates->get("api_factionsummary")."\";"); 
+     }
+     else
+     {
+        eval("\$disco_body = \"API Unavailable.\";");
+     }
+       
+    eval("\$page = \"".$templates->get("disco")."\";"); 
+    output_page($page);
+}
 else
 {
     eval("\$disco_body = \"Uhhhhh\";");
     eval("\$page = \"".$templates->get("disco")."\";"); 
     output_page($page);
 }
-// Spit out the page to the user once we've put all the templates and vars together
 
 
 ?>

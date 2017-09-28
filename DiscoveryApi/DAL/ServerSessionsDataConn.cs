@@ -6,9 +6,9 @@ namespace DiscoveryApi.DAL
     public partial class ServerSessionsDataConn
     {
         public int Id { get; set; }
+        public int Duration { get; set; }
         public int Lag { get; set; }
         public string Location { get; set; }
-        public int Duration { get; set; }
         public int Loss { get; set; }
         public int Ping { get; set; }
         public int SessionId { get; set; }

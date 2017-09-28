@@ -14,7 +14,17 @@
     <div class="card-block">
         <h4 class="card-title">Players Online</h4>
         <h6 class="card-subtitle mb-2 text-muted">@Model.LastPlayerOnlineCache.ToString()</h6>
-        <div class="card-block"><pre>@Model.PlayerOnlineCache</pre></div>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#PlayerOnlineCache" aria-expanded="false" aria-controls="PlayerOnlineCache">Toggle</button>
+        <div id="PlayerOnlineCache" class="card-block collapse"><pre>@Model.PlayerOnlineCache</pre></div>
+    </div>
+</div>
+<br />
+<div class="card">
+    <div class="card-block">
+        <h4 class="card-title">Faction Global Activity Cache</h4>
+        <h6 class="card-subtitle mb-2 text-muted">@Model.LastFactionGlobalActivityCache.ToString()</h6>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#FactionGlobalCache" aria-expanded="false" aria-controls="FactionGlobalCache">Toggle</button>
+        <div id="FactionGlobalCache" class="card-block collapse"><pre>@Model.FactionGlobalActivityCache</pre></div>
     </div>
 </div>
 

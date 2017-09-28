@@ -223,5 +223,92 @@ namespace DiscoveryApi.Controllers
             
             return "OK";
         }
+
+        /// <summary>
+        /// Generate a static history of faction activity. This is meant for everything prior to the ongoing month. 
+        /// </summary>
+        /// <param name="key">API key</param>
+        /// <param name="length">Expressed in months</param>
+        /// <returns></returns>
+        [HttpGet("{key}/{length}")]
+        public string GenerateFactionHistory(string key, int length = 2)
+        {
+            if (!isValidKey(key))
+            {
+                return "NO";
+            }
+
+            CacheManager cm = CacheManager.Instance;
+            //Get all existing server factions
+            var Factions = context.ServerFactions.ToList();
+            var end_month = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, 0);
+            var start_month = end_month.AddMonths(-length);
+            
+
+            //For each faction...
+            foreach (var faction in Factions)
+            {
+                //Potentially existing activity records
+                var FactionActivity = context.ServerFactionsActivity.Where(c => c.FactionId == faction.Id).ToList();
+
+                //Start iterating per month
+                var curr_start = start_month;
+ 
+                while (curr_start < end_month)
+                {
+                    ulong total_in_seconds = 0;
+                    ulong total_wasted_seconds = 0;
+
+                    var curr_end = new DateTime(curr_start.Year, curr_start.Month, DateTime.DaysInMonth(curr_start.Year, curr_start.Month), 23, 59, 59, 999);
+
+                    //Get all sessions matching the faction tag within that timeframe
+                    //Also I don't think it would ever happen but we're going to ensure we only take sessions that have ended
+                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= curr_start && c.SessionStart <= curr_end && c.SessionEnd.HasValue).ToList();
+                    //We also have to go through each system visited in order to revoke wasted activity
+                    foreach (var item in sessions)
+                    {
+                        foreach (var system in item.ServerSessionsDataConn)
+                        {
+                            if (cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                            {
+                                //wasted activity
+                                total_wasted_seconds += (ulong)system.Duration;
+                            }
+                            else
+                            {
+                                //not wasted
+                                total_in_seconds += (ulong)system.Duration;
+                            }
+                        }
+                    }
+
+                    if (FactionActivity.Any(c => c.Stamp == curr_start))
+                    {
+                        var Data = FactionActivity.SingleOrDefault(c => c.Stamp == curr_start);
+                        Data.Duration = total_in_seconds;
+                        if (total_wasted_seconds > 0)
+                            Data.Duration2 = total_wasted_seconds;
+                    }
+                    else
+                    {
+                        var Data = new ServerFactionsActivity();
+                        Data.Duration = total_in_seconds;
+                        Data.FactionId = faction.Id;
+                        Data.Stamp = curr_start;
+                        if (total_wasted_seconds > 0)
+                            Data.Duration2 = total_wasted_seconds;
+
+                        context.ServerFactionsActivity.Add(Data);
+                    }
+
+                    curr_start = curr_start.AddMonths(1);
+                }
+
+                //Save for each faction at a time, despite it will likely slow down the process to do that
+                context.SaveChanges();
+            }
+
+            return "OK";
+        }
     }
 }

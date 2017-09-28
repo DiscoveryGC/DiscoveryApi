@@ -1,4 +1,5 @@
-Scaffold-DbContext "server=localhost;userid=api;pwd=alley;port=3307;database=api;sslmode=none;" Pomelo.EntityFrameworkCore.MySql -OutputDir DAL
+Scaffold-DbContext "server=localhost;userid=api;pwd=alley;port=3307;database=api;sslmode=none;" Pomelo.EntityFrameworkCore.MySql -OutputDir DALb
+dotnet ef dbcontext scaffold "server=localhost;userid=api;pwd=alley;port=3307;database=api_save;" Pomelo.EntityFrameworkCore.MySql --output-dir DALb
 
 CREATE TABLE server_sessions_data_conn(
 	id int(11) NOT NULL AUTO_INCREMENT,
@@ -59,7 +60,8 @@ CREATE TABLE server_factions_activity(
    id int(11) NOT NULL AUTO_INCREMENT,
    faction_id int(11) NOT NULL,
    stamp date NOT NULL,
-   duration bigint NOT NULL,
+   duration UNSIGNED bigint NOT NULL,
+   duration2 UNSIGNED bigint NULL,
    PRIMARY KEY (id),
    FOREIGN KEY (faction_id) REFERENCES server_factions(id)
 ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;

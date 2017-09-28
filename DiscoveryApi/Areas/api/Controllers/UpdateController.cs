@@ -245,40 +245,5 @@ namespace DiscoveryApi.Controllers
             else
                 return false;
         }
-
-        [HttpGet("{key}")]
-        public string MakeOldFactionActivity(string key)
-        {
-            if (!isValidKey(key))
-            {
-                return "NO";
-            }
-
-            var OldActivity = context.ServerFactionsActivity.ToList();
-            var ServerFactions = context.ServerFactions.ToList();
-
-            //We will go as far as one year from now, should be enough
-            DateTime end = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).Date.ToUniversalTime();
-            DateTime start = end.AddYears(-1);
-
-            for (DateTime range_start = end.AddYears(-1); range_start < end; range_start = range_start.AddMonths(1))
-            {
-                DateTime range_end = new DateTime(range_start.Year, range_start.Month, DateTime.DaysInMonth(range_start.Year, range_start.Month), 23, 59, 59);
-                foreach (var item in ServerFactions)
-                {
-                    var activity = context.ServerSessions.Where(c => c.PlayerName.ToUpper().Contains(item.FactionTag.ToUpper())).ToList();
-                    if (activity.Count > 0)
-                    {
-                        long duration = 0;
-                        foreach (var session in activity)
-                        {
-
-                        }
-                    }
-                }
-            }
-
-            return "OK";
-        }
     }
 }

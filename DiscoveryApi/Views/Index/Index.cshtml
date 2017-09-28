@@ -11,6 +11,7 @@ Hello. Welcome to the Discovery API.
 <h5>Data</h5>
 <div class="row">
     <a class="btn btn-primary" target="_blank" href="@Url.Action("GetPlayers", new { controller = "Online", area = "api", key = "dev" })">Get Online Players</a>
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("GetFactionSummary", new { controller = "Online", area = "api", key = "dev" })">Get Faction Summary</a>
 </div>
 
 <h5>Admin</h5>
@@ -23,5 +24,6 @@ Hello. Welcome to the Discovery API.
 <div class="row">
     <a class="btn btn-primary" target="_blank" href="@Url.Action("FixConnData", new { controller = "Maintenance", key = "dev" })">Fix Conn Data</a>
     <a class="btn btn-primary" target="_blank" href="@Url.Action("CollateConnData", new { controller = "Maintenance", key = "dev" })">Collate Conn Data</a>
+    <a class="btn btn-primary" target="_blank" href="@Url.Action("GenerateFactionHistory", new { controller = "Maintenance", key = "dev", length = 12 })">Generate Faction History</a>
 </div>
 

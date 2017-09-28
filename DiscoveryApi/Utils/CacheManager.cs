@@ -29,6 +29,8 @@ namespace DiscoveryApi.Utils
         public DateTime LastUpdate = new DateTime(0);
         public int MaxRetry = 10;
         public int Retry = 0;
+        //Current Faction Danger Threshold: 24h
+        public ulong Faction_DangerThreshold = 86400;
 
         //Available caches
         public string PlayerOnlineCache;
@@ -45,6 +47,8 @@ namespace DiscoveryApi.Utils
 
         public List<FactionCache> FactionIndividualActivityCache = new List<FactionCache>();
         public int FactionIndividualCacheDuration = 900;
+
+        public List<string> WastedActivitySystems = new List<string>() { "LI06", "IW09" };
 
         public CacheManager()
         {

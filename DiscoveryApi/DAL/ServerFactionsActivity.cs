@@ -6,7 +6,8 @@ namespace DiscoveryApi.DAL
     public partial class ServerFactionsActivity
     {
         public int Id { get; set; }
-        public long Duration { get; set; }
+        public ulong Duration { get; set; }
+        public ulong? Duration2 { get; set; }
         public int FactionId { get; set; }
         public DateTime Stamp { get; set; }
 

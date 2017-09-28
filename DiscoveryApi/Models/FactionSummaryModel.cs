@@ -14,9 +14,11 @@ namespace DiscoveryApi.Models
 
     public class FactionSummarySingle
     {
+        public int Id { get; set; }
+        public string Tag { get; set; }
         public string Name { get; set; }
-        public string Time { get; set; }
+        public string Current_Time { get; set; }
+        public string Last_Time { get; set; }
         public bool Danger { get; set; }
-        public int Performance { get; set; }
     }
 }

@@ -103,20 +103,91 @@ namespace DiscoveryApi.Controllers
                 return Json(model);
             }
 
+            var now = DateTime.UtcNow;
             CacheManager cm = CacheManager.Instance;
 
             //Check if we have to renew the cache
-            var now = DateTime.UtcNow;
             if (cm.LastFactionGlobalActivityCache.AddSeconds(cm.FactionGlobalActivityDuration) < now)
             {
                 model.Timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");
                 model.Factions = new List<FactionSummarySingle>();
+                
+                var start_now = new DateTime(now.Year, now.Month, 1, 0, 0, 0, 0);
+
+                var start_last = start_now.AddMonths(-1);
+                var end_last = new DateTime(start_last.Year, start_last.Month, DateTime.DaysInMonth(start_last.Year, start_last.Month), 23, 59, 59, 999);
 
                 var Factions = context.ServerFactions.ToList();
-
-                foreach (var item in Factions)
+                foreach (var faction in Factions)
                 {
-                    //Get all sessions independent of name, we don't care for individual players
+                    var FactionMdl = new FactionSummarySingle();
+                    FactionMdl.Name = faction.FactionName;
+                    FactionMdl.Tag = faction.FactionTag;
+                    FactionMdl.Danger = false;
+                    FactionMdl.Id = faction.Id;
+
+                    ulong curr_time = 0;
+                    ulong last_time = 0;
+                    
+                    //Potentially existing activity records
+                    var FactionActivity = context.ServerFactionsActivity.Where(c => c.FactionId == faction.Id).ToList();
+
+                    //Get all sessions for the current month
+                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
+                    foreach (var item in sessions)
+                    {
+                        foreach (var system in item.ServerSessionsDataConn)
+                        {
+                            if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                            {
+                                //not wasted
+                                curr_time += (ulong)system.Duration;
+                            }
+                        }
+                    }
+
+                    //Get the sessions of the previous month
+                    if (FactionActivity.Any(c => c.Stamp == start_last))
+                    {
+                        var activity = FactionActivity.SingleOrDefault(c => c.Stamp == start_last);
+                        last_time = activity.Duration;
+                    }
+                    else
+                    {
+                        //The values have not yet been precalculated
+                        // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
+                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
+                        foreach (var item in sessions)
+                        {
+                            foreach (var system in item.ServerSessionsDataConn)
+                            {
+                                if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                                {
+                                    //not wasted
+                                    last_time += (ulong)system.Duration;
+                                }
+                            }
+                        }
+                    }
+
+                    //Compile the data
+                    TimeSpan cspan = TimeSpan.FromSeconds(curr_time);
+                    TimeSpan lspan = TimeSpan.FromSeconds(last_time);
+                    if (cspan.TotalHours < 24)
+                        FactionMdl.Current_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
+                    else
+                        FactionMdl.Current_Time = string.Format("{0}d {1}:{2}:{3}", cspan.Days, TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
+
+                    if (lspan.TotalHours < 24)
+                        FactionMdl.Last_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
+                    else
+                        FactionMdl.Last_Time = string.Format("{0}d {1}:{2}:{3}", lspan.Days, TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
+
+                    if (curr_time < cm.Faction_DangerThreshold)
+                        FactionMdl.Danger = true;
+
+                    model.Factions.Add(FactionMdl);
+
                 }
 
                 cm.FactionGlobalActivityCache = JsonConvert.SerializeObject(model);
@@ -132,6 +203,14 @@ namespace DiscoveryApi.Controllers
                 return true;
             else
                 return false;
+        }
+
+        private string TimeIntToStr(int Time)
+        {
+            if (Time < 10)
+                return "0" + Time.ToString();
+            else
+                return Time.ToString();
         }
     }
 }
