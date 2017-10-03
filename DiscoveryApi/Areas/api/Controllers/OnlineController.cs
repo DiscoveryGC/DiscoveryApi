@@ -92,6 +92,108 @@ namespace DiscoveryApi.Controllers
             return Json(cm.PlayerOnlineCache);
         }
 
+        [HttpGet("{tag}/{key}")]
+        public JsonResult GetFactionDetails(string tag, string key)
+        {
+            var model = new FactionDetailsModel();
+            if (!isValidKey(key))
+            {
+                logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
+                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                return Json(model);
+            }
+
+            var now = DateTime.UtcNow;
+            CacheManager cm = CacheManager.Instance;
+
+            var factions = context.ServerFactions.Where(c => c.FactionTag == tag);
+            if (factions.Count() == 0) {
+                model.Error = Ressources.ApiResource.FactionNotFound;
+                return Json(model);
+            }
+            var faction = factions.First();
+
+            // Check if we have to renew the cache
+            if (!cm.FactionIndividualActivityCache.ContainsKey(tag) || cm.FactionIndividualActivityCache[tag].LastCache.AddSeconds(cm.FactionIndividualCacheDuration) < now)
+            {
+                var start_now = new DateTime(now.Year, now.Month, 1, 0, 0, 0, 0);
+
+                var start_last = start_now.AddMonths(-1);
+                var end_last = new DateTime(start_last.Year, start_last.Month, DateTime.DaysInMonth(start_last.Year, start_last.Month), 23, 59, 59, 999);
+
+                model.Timestamp = now.ToString("yyyy-MM-ddTHH:mm:ss");
+                model.Characters = new Dictionary<string, CharacterActivity>();
+
+                Dictionary<string, ulong> curr_time = new Dictionary<string, ulong>();
+                Dictionary<string, ulong> last_time = new Dictionary<string, ulong>();
+
+                //Get all sessions for the current month
+                var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
+                foreach (var session in sessions)
+                {
+                    model.Characters[session.PlayerName] = new CharacterActivity();
+                    curr_time[session.PlayerName] = 0;
+                }
+                foreach (var session in sessions)
+                {
+                    foreach (var system in session.ServerSessionsDataConn)
+                    {
+                        if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                        {
+                            curr_time[session.PlayerName] += (ulong)system.Duration;
+                        }
+                    }
+                }
+                sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
+                foreach (var session in sessions)
+                {
+                    model.Characters[session.PlayerName] = new CharacterActivity();
+                    last_time[session.PlayerName] = 0;
+                }
+                foreach (var session in sessions)
+                {
+                    foreach (var system in session.ServerSessionsDataConn)
+                    {
+                        if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                        {
+                            last_time[session.PlayerName] += (ulong)system.Duration;
+                        }
+                    }
+                }
+
+                foreach (KeyValuePair<string, CharacterActivity> entry in model.Characters)
+                {
+                    //Compile the data
+                    ulong curr_seconds = 0;
+                    ulong last_seconds = 0;
+                    if (curr_time.ContainsKey(entry.Key)) {
+                        curr_seconds = curr_time[entry.Key];
+                    }
+                    if (last_time.ContainsKey(entry.Key)) {
+                        last_seconds = last_time[entry.Key];
+                    }
+                    TimeSpan cspan = TimeSpan.FromSeconds(curr_seconds);
+                    TimeSpan lspan = TimeSpan.FromSeconds(last_seconds);
+                    if (cspan.TotalHours < 24)
+                        entry.Value.Current_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
+                    else
+                        entry.Value.Current_Time = string.Format("{0}d {1}:{2}:{3}", cspan.Days, TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
+
+                    if (lspan.TotalHours < 24)
+                        entry.Value.Last_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
+                    else
+                        entry.Value.Last_Time = string.Format("{0}d {1}:{2}:{3}", lspan.Days, TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
+                }
+
+                var cache = new FactionCache();
+                cache.Cache = JsonConvert.SerializeObject(model);
+                cache.LastCache = DateTime.UtcNow;
+                cm.FactionIndividualActivityCache[tag] = cache;
+            }
+
+            return Json(cm.FactionIndividualActivityCache[tag].Cache);
+        }
+
         [HttpGet("{key}")]
         public JsonResult GetFactionSummary(string key)
         {

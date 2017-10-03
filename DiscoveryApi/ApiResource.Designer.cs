@@ -96,5 +96,11 @@ namespace Ressources {
                 return ResourceManager.GetString("UpdateRequestFailed", resourceCulture);
             }
         }
+
+        public static string FactionNotFound {
+            get {
+                return ResourceManager.GetString("FactionNotFound", resourceCulture);
+            }
+        }
     }
 }

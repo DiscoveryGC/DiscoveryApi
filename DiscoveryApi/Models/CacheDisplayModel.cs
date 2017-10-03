@@ -22,6 +22,6 @@ namespace DiscoveryApi.Models
         public string FactionGlobalActivityCache { get; set; }
         public DateTime LastFactionGlobalActivityCache { get; set; }
 
-        //public List<FactionCache> FactionIndividualActivityCache;
+        //public Dictionary<string, FactionCache> FactionIndividualActivityCache { get; set; } // TODO
     }
 }

@@ -7,7 +7,6 @@ namespace DiscoveryApi.Utils
 {
     public struct FactionCache
     {
-        public string Tag { get; set; }
         public DateTime LastCache { get; set; }
         public string Cache { get; set; }
     }
@@ -45,7 +44,7 @@ namespace DiscoveryApi.Utils
         public DateTime LastFactionGlobalActivityCache = new DateTime(0);
         public int FactionGlobalActivityDuration = 900;
 
-        public List<FactionCache> FactionIndividualActivityCache = new List<FactionCache>();
+        public Dictionary<string, FactionCache> FactionIndividualActivityCache = new Dictionary<string, FactionCache>();
         public int FactionIndividualCacheDuration = 900;
 
         public List<string> WastedActivitySystems = new List<string>() { "LI06", "IW09" };
