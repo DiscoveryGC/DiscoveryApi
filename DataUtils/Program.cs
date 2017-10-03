@@ -54,7 +54,7 @@ namespace DataUtils
                 infocards = InfocardMap.Load(fl_path + infocards_path);
                 return infocards;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Failed to load infocards file. Check if the file has not received bogus data such as git diff information.");
                 return new List<Infocard>();
@@ -113,26 +113,29 @@ namespace DataUtils
 
         static void MakeSQL(Dictionary<string, string> systems, Dictionary<string, string> ships, Dictionary<string, string> factions)
         {
-            using (StreamWriter sw = new StreamWriter((Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\output.txt"), false))
+            using (FileStream file = File.Create(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\output.txt"))
             {
-                sw.WriteLine("DELETE FROM factions;");
-                foreach (var item in factions)
+                using (StreamWriter sw = new StreamWriter(file))
                 {
-                    sw.WriteLine(string.Format("INSERT INTO factions (nickname, name) VALUES ('{0}', '{1}');", item.Key, item.Value.Replace("'", "\\'")));
+                    sw.WriteLine("DELETE FROM factions;");
+                    foreach (var item in factions)
+                    {
+                        sw.WriteLine(string.Format("INSERT INTO factions (nickname, name) VALUES ('{0}', '{1}');", item.Key, item.Value.Replace("'", "\\'")));
+                    }
+                    sw.WriteLine("DELETE FROM ships;");
+                    foreach (var item in ships)
+                    {
+                        sw.WriteLine(string.Format("INSERT INTO ships (nickname, name) VALUES ('{0}', '{1}');", item.Key, item.Value.Replace("'", "\\'")));
+                    }
+                    sw.WriteLine("DELETE FROM systems;");
+                    foreach (var item in systems)
+                    {
+                        sw.WriteLine(string.Format("INSERT INTO systems (nickname, name) VALUES ('{0}', '{1}');", item.Key, item.Value.Replace("'", "\\'")));
+                    }
                 }
-                sw.WriteLine("DELETE FROM ships;");
-                foreach (var item in ships)
-                {
-                    sw.WriteLine(string.Format("INSERT INTO ships (nickname, name) VALUES ('{0}', '{1}');", item.Key, item.Value.Replace("'", "\\'")));
-                }
-                sw.WriteLine("DELETE FROM systems;");
-                foreach (var item in systems)
-                {
-                    sw.WriteLine(string.Format("INSERT INTO systems (nickname, name) VALUES ('{0}', '{1}');", item.Key, item.Value.Replace("'", "\\'")));
-                }
-            }
 
-            Console.WriteLine("Created SQL statement");
+                Console.WriteLine("Created SQL statement");
+            }
         }
     }
 }
