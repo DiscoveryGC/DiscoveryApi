@@ -129,4 +129,7 @@
   <data name="UpdateRequestFailed" xml:space="preserve">
     <value>The update request has failed.</value>
   </data>
+  <data name="FactionNotFound" xml:space="preserve">
+    <value>Faction not found.</value>
+  </data>
 </root>
