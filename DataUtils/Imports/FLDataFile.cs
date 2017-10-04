@@ -205,7 +205,7 @@ namespace DataUtils.Imports
             {
                 buf = new byte[fs.Length];
                 fs.Read(buf, 0, (int)fs.Length);
-                fs.Close();
+                fs.Dispose();
             }
             Parse(buf, Path.GetFileName(filePath));
         }
@@ -244,7 +244,7 @@ namespace DataUtils.Imports
 
             StreamReader sr = new StreamReader(new MemoryStream(buf));
             contents += sr.ReadToEnd();
-            sr.Close();
+            sr.Dispose();
 
             // If the file is empty then this is an error
             if (buf.Length == 0)
@@ -392,7 +392,7 @@ namespace DataUtils.Imports
 
                     strLine = sr.ReadLine(); lineNumber++;
                 }
-                sr.Close();
+                sr.Dispose();
             }
             catch (Exception ex)
             {
@@ -686,7 +686,7 @@ namespace DataUtils.Imports
                 using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     fs.Write(buf, 0, buf.Length);
-                    fs.Close();
+                    fs.Dispose();
                 }
             }
             catch (Exception ex)
