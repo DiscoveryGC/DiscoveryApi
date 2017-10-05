@@ -22,5 +22,13 @@ namespace DiscoveryApi.DAL
         public DateTime SessionStart { get; set; }
 
         public virtual ICollection<ServerSessionsDataConn> ServerSessionsDataConn { get; set; }
+
+        public bool PlayerInFaction(ServerFactions f) {
+            if (f.FactionTag == "[TBH]" || f.FactionTag == "|Aoi") {
+                return PlayerName.Contains(f.FactionTag);
+            } else {
+                return PlayerName.StartsWith(f.FactionTag);
+            }
+        }
     }
 }

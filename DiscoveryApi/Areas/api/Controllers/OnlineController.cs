@@ -128,7 +128,7 @@ namespace DiscoveryApi.Controllers
                 Dictionary<string, ulong> last_time = new Dictionary<string, ulong>();
 
                 //Get all sessions for the current month
-                var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
+                var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerInFaction(faction) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
                 foreach (var session in sessions)
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
@@ -144,7 +144,7 @@ namespace DiscoveryApi.Controllers
                         }
                     }
                 }
-                sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
+                sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerInFaction(faction) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
                 foreach (var session in sessions)
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
@@ -235,7 +235,7 @@ namespace DiscoveryApi.Controllers
                     var FactionActivity = context.ServerFactionsActivity.Where(c => c.FactionId == faction.Id).ToList();
 
                     //Get all sessions for the current month
-                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
+                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerInFaction(faction) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
                     foreach (var item in sessions)
                     {
                         foreach (var system in item.ServerSessionsDataConn)
@@ -258,7 +258,7 @@ namespace DiscoveryApi.Controllers
                     {
                         //The values have not yet been precalculated
                         // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
-                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerName.Contains(faction.FactionTag) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
+                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerInFaction(faction) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
                         foreach (var item in sessions)
                         {
                             foreach (var system in item.ServerSessionsDataConn)
