@@ -1,158 +1,144 @@
-$(document).ready(function(){
-    var table_tag = document.getElementById("api-body");
-    var timestamp_tag = document.getElementById("player_timestamp");
-    
-    if (json_data)
-    {
-      //http://i.imgur.com/nqvSjOB.jpg
-      var timestamp_date = new Date(json_data.Timestamp);
-      timestamp_tag.innerText = timestamp_date.toLocaleString();
-      
-      for(var i = 0; i < json_data.Factions.length; i++)
-      {
-          var item = json_data.Factions[i];
-      
-          var row_e = document.createElement("tr");
-          row_e.classList.add("api-row");
-          
-          var name_e = document.createElement("td");
-          var name_a_e = document.createElement("a");
-          name_a_e.href = "api_interface.php?action=faction_details&tag=" + encodeURIComponent(item.Tag);
-          name_a_e.innerText = item.Name;
-          name_e.appendChild(name_a_e);
-          row_e.appendChild(name_e);
-          
-          var tag_e = document.createElement("td");
-          tag_e.innerText = item.Tag;
-          row_e.appendChild(tag_e);
-          
-          var current_e = document.createElement("td");
-          current_e.innerText = item.Current_Time;
-          row_e.appendChild(current_e);
-          
-          var last_e = document.createElement("td");
-          last_e.innerText = item.Last_Time;
-          row_e.appendChild(last_e);
-                    
-          table_tag.appendChild(row_e);          
-      }
-    }    
+/*global document, $, json_data*/
+'use strict';
 
-   var tcats = document.querySelectorAll(".api-headers .tcat");
-    var nameSortTrigger = tcats[nameColNum];
-    var tagSortTrigger = tcats[tagColNum];
-    var currSortTrigger = tcats[currColNum];
-    var lastSortTrigger = tcats[lastColNum];
-    
-    nameSortTrigger.addEventListener("click", function(e) {
-    	sortTable("name", currentDir);
-    });
-    
-    tagSortTrigger.addEventListener("click", function(e) {
-    	sortTable("tag", currentDir);
-    });
-    
-    currSortTrigger.addEventListener("click", function(e) {
-    	sortTable("curr", currentDir);
-    });
-    
-    lastSortTrigger.addEventListener("click", function(e) {
-    	sortTable("last", currentDir);
-    });
-    
-    //Perform the initial sorting by Current Activity
-    sortTable("curr", currentDir);
-    sortTable("curr", currentDir);
-});
-
-/* separate asc/desc sort buttons may be implemented by calling sortTable(sortType, direction) and uncommenting the handler code block */
-var rowSelector = ".api-row";
-
-var nameColNum = 0;
-var tagColNum = 1;
-var currColNum = 2;
-var lastColNum = 3;
-
-
-
-var currentDir = "descending";
-var prevSort = "";
-
-function sortTable(currentSort, dir) {
-	var rowArray = Array.from(document.querySelectorAll(rowSelector));
-	var sortedRowArray = rowArray.sort(function(a, b) {
-		if (currentSort == "last") {
-      var aVal = parseInt(getTimeInt(a.children[lastColNum].innerText));
-			var bVal = parseInt(getTimeInt(b.children[lastColNum].innerText));
-			if (aVal > bVal) return 1;
-			if (aVal < bVal) return -1;
-			return 0;
-		} else if (currentSort == "curr") {
-			var aVal = parseInt(getTimeInt(a.children[currColNum].innerText));
-			var bVal = parseInt(getTimeInt(b.children[currColNum].innerText));
-			if (aVal > bVal) return 1;
-			if (aVal < bVal) return -1;
-			return 0;
-		} else if (currentSort == "name") {
-			var aVal = a.children[nameColNum].innerText.toLowerCase();
-			var bVal = b.children[nameColNum].innerText.toLowerCase();
-			if (aVal > bVal) return 1;
-			if (aVal < bVal) return -1;
-			return 0;
-		} else if (currentSort == "tag") {
-			var aVal = a.children[tagColNum].innerText.toLowerCase();
-			var bVal = b.children[tagColNum].innerText.toLowerCase();
-			if (aVal > bVal) return 1;
-			if (aVal < bVal) return -1;
-			return 0;
-		} 
-	});
-
-	/* sort direction handling for one-button use; remove if using separate asc/desc sort buttons */
-	if (prevSort == currentSort) {
-		if (currentDir == "descending") {
-			sortedRowArray.reverse();
-			currentDir = "ascending";
-		} else {
-			currentDir = "descending";
-		}
-	} else {
-		currentDir = "descending";
-	}
-	prevSort = currentSort;
-	/* end sort direction handler */
-
-	sortedRowArray.forEach(function(row) {
-		document.querySelector(".api-body").insertBefore(row, null);
-	});
-}
+var rowSelector = ".api-row",
+    nameColNum = 0,
+    tagColNum = 1,
+    currColNum = 2,
+    lastColNum = 3,
+    currentDir = "descending",
+    prevSort = "";
 
 function getTimeInt(timeString) {
-  var seconds = 0;
-  var days = 0;
-  
-  var hms = timeString;
-  
-  if (timeString.indexOf("d") != -1) 
-  {    
-		try 
-    {
-			days = parseInt(timeString.match(/([0-9]+)d/)[1]);
-      hms = timeString.substring(timeString.indexOf("d")+1);     
-		} catch (e) 
-    {
-			days = 0;
-		}
-	}
-    
-  var a = hms.split(':');
-  try
-  {
-    seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
-  } catch (e)
-  {
-    seconds = 0;
-  }
-  
-	return (((days * 24) * 60) * 60) + seconds;
+    var seconds = 0,
+        days = 0,
+        hms = timeString,
+        a;
+
+    if (timeString.indexOf("d") !== -1) {
+        try {
+            days = parseInt(timeString.match(/([0-9]+)d/)[1], 10);
+            hms = timeString.substring(timeString.indexOf("d") + 1);
+        } catch (e) {
+            days = 0;
+        }
+    }
+
+    a = hms.split(':');
+    try {
+        seconds = a[0] * 60 * 60 + a[1] * 60 + a[2];
+    } catch (e) {
+        seconds = 0;
+    }
+
+    return (((days * 24) * 60) * 60) + seconds;
 }
+
+/* separate asc/desc sort buttons may be implemented by calling sortTable(sortType, direction) and uncommenting the handler code block */
+function sortTable(currentSort, dir) {
+    var rowArray = Array.from(document.querySelectorAll(rowSelector)),
+        sortedRowArray = rowArray.sort(function (a, b) {
+            var aVal, bVal;
+            if (currentSort === lastColNum || currentSort === currColNum) {
+                aVal = parseInt(getTimeInt(a.children[currentSort].innerText), 10);
+                bVal = parseInt(getTimeInt(b.children[currentSort].innerText), 10);
+            } else if (currentSort === nameColNum || currentSort === tagColNum) {
+                aVal = a.children[currentSort].innerText.toLowerCase();
+                bVal = b.children[currentSort].innerText.toLowerCase();
+            }
+            if (aVal > bVal) {
+                return 1;
+            }
+            if (aVal < bVal) {
+                return -1;
+            }
+            return 0;
+        });
+
+    /* sort direction handling for one-button use; remove if using separate asc/desc sort buttons */
+    if (prevSort === currentSort) {
+        if (dir === "descending") {
+            sortedRowArray.reverse();
+            dir = "ascending";
+        } else {
+            dir = "descending";
+        }
+    } else {
+        dir = "descending";
+    }
+    prevSort = currentSort;
+    /* end sort direction handler */
+
+    sortedRowArray.forEach(function (row) {
+        document.querySelector(".api-body").insertBefore(row, null);
+    });
+}
+
+$(document).ready(function () {
+    var table_tag = document.getElementById("api-body"),
+        timestamp_tag = document.getElementById("player_timestamp"),
+        i = 0,
+        tcats = document.querySelectorAll(".api-headers .tcat"),
+        timestamp_date,
+        item,
+        row_e,
+        name_e,
+        name_a_e,
+        tag_e,
+        current_e,
+        last_e;
+
+    if (json_data) {
+        //http://i.imgur.com/nqvSjOB.jpg
+        timestamp_date = new Date(json_data.Timestamp);
+        timestamp_tag.innerText = timestamp_date.toLocaleString();
+
+        for (i = 0; i < json_data.Factions.length; i += 1) {
+            item = json_data.Factions[i];
+
+            row_e = document.createElement("tr");
+            row_e.classList.add("api-row");
+
+            name_e = document.createElement("td");
+            name_a_e = document.createElement("a");
+            name_a_e.href = "api_interface.php?action=faction_details&tag=" + encodeURIComponent(item.Tag);
+            name_a_e.innerText = item.Name;
+            name_e.appendChild(name_a_e);
+            row_e.appendChild(name_e);
+
+            tag_e = document.createElement("td");
+            tag_e.innerText = item.Tag;
+            row_e.appendChild(tag_e);
+
+            current_e = document.createElement("td");
+            current_e.innerText = item.Current_Time;
+            row_e.appendChild(current_e);
+
+            last_e = document.createElement("td");
+            last_e.innerText = item.Last_Time;
+            row_e.appendChild(last_e);
+
+            table_tag.appendChild(row_e);
+        }
+    }
+
+    tcats[nameColNum].addEventListener("click", function () {
+        sortTable(nameColNum, currentDir);
+    });
+
+    tcats[tagColNum].addEventListener("click", function () {
+        sortTable(tagColNum, currentDir);
+    });
+
+    tcats[currColNum].addEventListener("click", function () {
+        sortTable(currColNum, currentDir);
+    });
+
+    tcats[lastColNum].addEventListener("click", function () {
+        sortTable(lastColNum, currentDir);
+    });
+
+    //Perform the initial sorting by Current Activity
+    sortTable(currColNum, currentDir);
+    sortTable(currColNum, currentDir);
+});
