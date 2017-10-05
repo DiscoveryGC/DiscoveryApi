@@ -45,7 +45,7 @@
     <EmbeddedResource Update="ApiResource.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ApiResource.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Ressources</CustomToolNamespace>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

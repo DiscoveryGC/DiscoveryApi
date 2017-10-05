@@ -33,7 +33,7 @@ namespace DiscoveryApi.Controllers
             if (!isValidKey(key))
             {
                 logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
-                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                model.Error = Resources.ApiResource.UnauthorizedAccess;
                 return Json(model);
             }
 
@@ -99,7 +99,7 @@ namespace DiscoveryApi.Controllers
             if (!isValidKey(key))
             {
                 logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
-                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                model.Error = Resources.ApiResource.UnauthorizedAccess;
                 return Json(model);
             }
 
@@ -108,7 +108,7 @@ namespace DiscoveryApi.Controllers
 
             var factions = context.ServerFactions.Where(c => c.FactionTag == tag);
             if (factions.Count() == 0) {
-                model.Error = Ressources.ApiResource.FactionNotFound;
+                model.Error = Resources.ApiResource.FactionNotFound;
                 return Json(model);
             }
             var faction = factions.First();
@@ -201,7 +201,7 @@ namespace DiscoveryApi.Controllers
             if (!isValidKey(key))
             {
                 logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
-                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                model.Error = Resources.ApiResource.UnauthorizedAccess;
                 return Json(model);
             }
 

@@ -42,7 +42,7 @@ namespace DiscoveryApi.Controllers
             if (!isValidKey(key))
             {
                 logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
-                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                model.Error = Resources.ApiResource.UnauthorizedAccess;
                 return Json(model);
             }
 
@@ -97,7 +97,7 @@ namespace DiscoveryApi.Controllers
                 {
                     //This can happen often as the cron script and the server updates may not be in perfect sync
                     cm.Retry = cm.Retry + 1;
-                    model.Error = Ressources.ApiResource.TimestampRenewTooSoon;
+                    model.Error = Resources.ApiResource.TimestampRenewTooSoon;
                     logger.LogWarning("Server data has not yet been renewed");
                     return Json(model);
                 }
@@ -230,7 +230,7 @@ namespace DiscoveryApi.Controllers
                 }
 
                 context.SaveChanges();
-                model.Error = Ressources.ApiResource.UpdateRequestFailed;
+                model.Error = Resources.ApiResource.UpdateRequestFailed;
                 logger.LogWarning("Failed to retrieve the server data");
                 return Json(model);
             }

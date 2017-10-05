@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Ressources {
+namespace Resources {
     using System;
     using System.Reflection;
     
