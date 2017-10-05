@@ -1,5 +1,5 @@
 /*global document, $, json_data*/
-'use strict';
+"use strict";
 
 var rowSelector = ".api-row",
     nameColNum = 0,
@@ -24,9 +24,9 @@ function getTimeInt(timeString) {
         }
     }
 
-    a = hms.split(':');
+    a = hms.split(":");
     try {
-        seconds = a[0] * 60 * 60 + a[1] * 60 + a[2];
+        seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
     } catch (e) {
         seconds = 0;
     }

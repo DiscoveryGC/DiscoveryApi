@@ -1,5 +1,5 @@
 /*global document, $, json_data*/
-'use strict';
+"use strict";
 
 /* separate asc/desc sort buttons may be implemented by calling sortTable(sortType, direction) and uncommenting the handler code block */
 var rowSelector = ".api-row",
@@ -14,6 +14,7 @@ var rowSelector = ".api-row",
 function getTimeInt(timeString) {
     var minutes = 0,
         hours = 0;
+
     try {
         minutes = parseInt(timeString.match(/([0-9]+)(m|\b)/)[1], 10);
     } catch (e) {
@@ -33,21 +34,15 @@ function sortTable(currentSort, dir) {
     var rowArray = Array.from(document.querySelectorAll(rowSelector)),
         sortedRowArray = rowArray.sort(function (a, b) {
             var aVal, bVal;
-            if (currentSort === "ping") {
-                aVal = parseInt(a.children[pingColNum].innerText, 10);
-                bVal = parseInt(b.children[pingColNum].innerText, 10);
-            } else if (currentSort === "time") {
-                aVal = parseInt(getTimeInt(a.children[timeColNum].innerText), 10);
-                bVal = parseInt(getTimeInt(b.children[timeColNum].innerText), 10);
-            } else if (currentSort === "name") {
-                aVal = a.children[nameColNum].innerText.toLowerCase();
-                bVal = b.children[nameColNum].innerText.toLowerCase();
-            } else if (currentSort === "system") {
-                aVal = a.children[sysColNum].innerText.toLowerCase();
-                bVal = b.children[sysColNum].innerText.toLowerCase();
-            } else if (currentSort === "region") {
-                aVal = a.children[regionColNum].innerText.toLowerCase();
-                bVal = b.children[regionColNum].innerText.toLowerCase();
+            if (currentSort === pingColNum) {
+                aVal = parseInt(a.children[currentSort].innerText, 10);
+                bVal = parseInt(b.children[currentSort].innerText, 10);
+            } else if (currentSort === timeColNum) {
+                aVal = parseInt(getTimeInt(a.children[currentSort].innerText), 10);
+                bVal = parseInt(getTimeInt(b.children[currentSort].innerText), 10);
+            } else if ([nameColNum, sysColNum, regionColNum].indexOf(currentSort) !== -1) {
+                aVal = a.children[currentSort].innerText.toLowerCase();
+                bVal = b.children[currentSort].innerText.toLowerCase();
             }
             if (aVal > bVal) {
                 return 1;
@@ -134,22 +129,22 @@ $(document).ready(function () {
     }
 
     nameSortTrigger.addEventListener("click", function () {
-        sortTable("name", currentDir);
+        sortTable(nameColNum, currentDir);
     });
 
     systemSortTrigger.addEventListener("click", function () {
-        sortTable("system", currentDir);
+        sortTable(sysColNum, currentDir);
     });
 
     regionSortTrigger.addEventListener("click", function () {
-        sortTable("region", currentDir);
+        sortTable(regionColNum, currentDir);
     });
 
     pingSortTrigger.addEventListener("click", function () {
-        sortTable("ping", currentDir);
+        sortTable(pingColNum, currentDir);
     });
 
     timeSortTrigger.addEventListener("click", function () {
-        sortTable("time", currentDir);
+        sortTable(timeColNum, currentDir);
     });
 });
