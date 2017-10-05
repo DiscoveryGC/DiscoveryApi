@@ -1,5 +1,6 @@
 $(document).ready(function(){
     var table_tag = document.getElementById("api-body");
+    var tag_tag = document.getElementById("factiontag");
     var timestamp_tag = document.getElementById("player_timestamp");
     
     if (json_data)
@@ -7,24 +8,19 @@ $(document).ready(function(){
       //http://i.imgur.com/nqvSjOB.jpg
       var timestamp_date = new Date(json_data.Timestamp);
       timestamp_tag.innerText = timestamp_date.toLocaleString();
+      tag_tag.innerText = new URL(location).searchParams.get("tag");
       
-      for(var i = 0; i < json_data.Factions.length; i++)
+      for(var i = 0; i < Object.keys(json_data.Characters).length; i++)
       {
-          var item = json_data.Factions[i];
+          var name = Object.keys(json_data.Characters)[i];
+          var item = json_data.Characters[name];
       
           var row_e = document.createElement("tr");
           row_e.classList.add("api-row");
           
           var name_e = document.createElement("td");
-          var name_a_e = document.createElement("a");
-          name_a_e.href = "api_interface.php?action=faction_details&tag=" + encodeURIComponent(item.Tag);
-          name_a_e.innerText = item.Name;
-          name_e.appendChild(name_a_e);
+          name_e.innerText = name;
           row_e.appendChild(name_e);
-          
-          var tag_e = document.createElement("td");
-          tag_e.innerText = item.Tag;
-          row_e.appendChild(tag_e);
           
           var current_e = document.createElement("td");
           current_e.innerText = item.Current_Time;
@@ -40,16 +36,11 @@ $(document).ready(function(){
 
    var tcats = document.querySelectorAll(".api-headers .tcat");
     var nameSortTrigger = tcats[nameColNum];
-    var tagSortTrigger = tcats[tagColNum];
     var currSortTrigger = tcats[currColNum];
     var lastSortTrigger = tcats[lastColNum];
     
     nameSortTrigger.addEventListener("click", function(e) {
     	sortTable("name", currentDir);
-    });
-    
-    tagSortTrigger.addEventListener("click", function(e) {
-    	sortTable("tag", currentDir);
     });
     
     currSortTrigger.addEventListener("click", function(e) {
@@ -69,9 +60,8 @@ $(document).ready(function(){
 var rowSelector = ".api-row";
 
 var nameColNum = 0;
-var tagColNum = 1;
-var currColNum = 2;
-var lastColNum = 3;
+var currColNum = 1;
+var lastColNum = 2;
 
 
 
@@ -99,13 +89,7 @@ function sortTable(currentSort, dir) {
 			if (aVal > bVal) return 1;
 			if (aVal < bVal) return -1;
 			return 0;
-		} else if (currentSort == "tag") {
-			var aVal = a.children[tagColNum].innerText.toLowerCase();
-			var bVal = b.children[tagColNum].innerText.toLowerCase();
-			if (aVal > bVal) return 1;
-			if (aVal < bVal) return -1;
-			return 0;
-		} 
+		}
 	});
 
 	/* sort direction handling for one-button use; remove if using separate asc/desc sort buttons */
