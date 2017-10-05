@@ -1,13 +1,12 @@
-/*global document, $, json_data*/
+/*global document, location, URL, $, json_data*/
 'use strict';
 
 var rowSelector = ".api-row",
-    nameColNum = 0,
-    tagColNum = 1,
-    currColNum = 2,
-    lastColNum = 3,
     currentDir = "descending",
-    prevSort = "";
+    prevSort = "",
+    nameColNum = 0,
+    currColNum = 1,
+    lastColNum = 2;
 
 function getTimeInt(timeString) {
     var seconds = 0,
@@ -26,7 +25,7 @@ function getTimeInt(timeString) {
 
     a = hms.split(':');
     try {
-        seconds = a[0] * 60 * 60 + a[1] * 60 + a[2];
+        seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
     } catch (e) {
         seconds = 0;
     }
@@ -42,10 +41,11 @@ function sortTable(currentSort, dir) {
             if (currentSort === lastColNum || currentSort === currColNum) {
                 aVal = parseInt(getTimeInt(a.children[currentSort].innerText), 10);
                 bVal = parseInt(getTimeInt(b.children[currentSort].innerText), 10);
-            } else if (currentSort === nameColNum || currentSort === tagColNum) {
-                aVal = a.children[currentSort].innerText.toLowerCase();
-                bVal = b.children[currentSort].innerText.toLowerCase();
+            } else if (currentSort === nameColNum) {
+                aVal = a.children[nameColNum].innerText.toLowerCase();
+                bVal = b.children[nameColNum].innerText.toLowerCase();
             }
+
             if (aVal > bVal) {
                 return 1;
             }
@@ -76,15 +76,18 @@ function sortTable(currentSort, dir) {
 
 $(document).ready(function () {
     var table_tag = document.getElementById("api-body"),
+        tag_tag = document.getElementById("factiontag"),
         timestamp_tag = document.getElementById("player_timestamp"),
-        i = 0,
         tcats = document.querySelectorAll(".api-headers .tcat"),
+        nameSortTrigger = tcats[nameColNum],
+        currSortTrigger = tcats[currColNum],
+        lastSortTrigger = tcats[lastColNum],
+        i,
         timestamp_date,
+        name,
         item,
         row_e,
         name_e,
-        name_a_e,
-        tag_e,
         current_e,
         last_e;
 
@@ -92,23 +95,18 @@ $(document).ready(function () {
         //http://i.imgur.com/nqvSjOB.jpg
         timestamp_date = new Date(json_data.Timestamp);
         timestamp_tag.innerText = timestamp_date.toLocaleString();
+        tag_tag.innerText = new URL(location).searchParams.get("tag");
 
-        for (i = 0; i < json_data.Factions.length; i += 1) {
-            item = json_data.Factions[i];
+        for (i = 0; i < Object.keys(json_data.Characters).length; i += 1) {
+            name = Object.keys(json_data.Characters)[i];
+            item = json_data.Characters[name];
 
             row_e = document.createElement("tr");
             row_e.classList.add("api-row");
 
             name_e = document.createElement("td");
-            name_a_e = document.createElement("a");
-            name_a_e.href = "api_interface.php?action=faction_details&tag=" + encodeURIComponent(item.Tag);
-            name_a_e.innerText = item.Name;
-            name_e.appendChild(name_a_e);
+            name_e.innerText = name;
             row_e.appendChild(name_e);
-
-            tag_e = document.createElement("td");
-            tag_e.innerText = item.Tag;
-            row_e.appendChild(tag_e);
 
             current_e = document.createElement("td");
             current_e.innerText = item.Current_Time;
@@ -122,19 +120,15 @@ $(document).ready(function () {
         }
     }
 
-    tcats[nameColNum].addEventListener("click", function () {
+    nameSortTrigger.addEventListener("click", function () {
         sortTable(nameColNum, currentDir);
     });
 
-    tcats[tagColNum].addEventListener("click", function () {
-        sortTable(tagColNum, currentDir);
-    });
-
-    tcats[currColNum].addEventListener("click", function () {
+    currSortTrigger.addEventListener("click", function () {
         sortTable(currColNum, currentDir);
     });
 
-    tcats[lastColNum].addEventListener("click", function () {
+    lastSortTrigger.addEventListener("click", function () {
         sortTable(lastColNum, currentDir);
     });
 

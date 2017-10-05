@@ -41,7 +41,7 @@ if ($mybb->input['action'] == "players_online") {
     output_page($page);
 }
 else if ($mybb->input['action'] == "faction_summary") {
-    add_breadcrumb("Faction Activity Summary", THIS_SCRIPT . "?action=faction_summary");
+    add_breadcrumb("Faction Activity", THIS_SCRIPT . "?action=faction_summary");
     if(!$mybb->user['uid'] || $mybb->user['uid'] < 1 )
     {
       error_no_permission();
@@ -63,6 +63,36 @@ else if ($mybb->input['action'] == "faction_summary") {
         eval("\$disco_body = \"API Unavailable.\";");
      }
        
+    eval("\$page = \"".$templates->get("disco")."\";"); 
+    output_page($page);
+}
+else if ($mybb->input['action'] == "faction_details") {
+    add_breadcrumb("Faction Activity", THIS_SCRIPT . "?action=faction_summary");
+    if(!$mybb->user['uid'] || $mybb->user['uid'] < 1 )
+    {
+        error_no_permission();
+    }
+    add_breadcrumb(htmlspecialchars($mybb->input['tag']), THIS_SCRIPT . "?action=faction_details&tag=" . urlencode($mybb->input['tag']));
+    if (isset($mybb->input['tag'])) {
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $api_location . "api/Online/GetFactionDetails/" . urlencode($mybb->input['tag']) . "/" . $api_key);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $json_data = curl_exec($curl);
+        curl_close($curl);
+
+        if ($json_data != false)
+        {
+            eval("\$disco_body = \"".$templates->get("api_faction_details")."\";");
+        }
+        else
+        {
+            eval("\$disco_body = \"API Unavailable.\";");
+        }
+    } else {
+        eval("\$disco_body = '<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/SAyHwbSuS3Y\" frameborder=\"0\" allowfullscreen></iframe>';");
+    }
+
+
     eval("\$page = \"".$templates->get("disco")."\";"); 
     output_page($page);
 }
