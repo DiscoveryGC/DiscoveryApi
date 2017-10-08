@@ -263,7 +263,7 @@ namespace DiscoveryApi.Controllers
 
                     //Get all sessions matching the faction tag within that timeframe
                     //Also I don't think it would ever happen but we're going to ensure we only take sessions that have ended
-                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.PlayerInFaction(faction) && c.SessionStart >= curr_start && c.SessionStart <= curr_end && c.SessionEnd.HasValue).ToList();
+                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= curr_start && c.SessionStart <= curr_end && c.SessionEnd.HasValue).ToList();
                     //We also have to go through each system visited in order to revoke wasted activity
                     foreach (var item in sessions)
                     {
