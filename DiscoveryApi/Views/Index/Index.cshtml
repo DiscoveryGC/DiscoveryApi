@@ -1,10 +1,6 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@{
-
-}
-
 
 Hello. Welcome to the Discovery API.
 
@@ -13,6 +9,17 @@ Hello. Welcome to the Discovery API.
     <a class="btn btn-primary" target="_blank" href="@Url.Action("GetPlayers", new { controller = "Online", area = "api", key = "dev" })">Get Online Players</a>
     <a class="btn btn-primary" target="_blank" href="@Url.Action("GetFactionSummary", new { controller = "Online", area = "api", key = "dev" })">Get Faction Summary</a>
 </div>
+<form id="factionsummary">
+    Faction tag: <input type="text" id="tag" />
+    <button type="submit">Get Faction Details</button>
+</form>
+<script lang="text/javascript">
+document.getElementById("factionsummary").onsubmit = function () {
+    var url = "@Url.Action("GetFactionDetails", new { controller = "Online", area = "api", key = "dev", tag = "TOREPLACE" })";
+    document.location.href = url.replace('TOREPLACE', this.children.tag.value);
+    return false;
+}
+</script>
 
 <h5>Admin</h5>
 <div class="row">
@@ -26,4 +33,3 @@ Hello. Welcome to the Discovery API.
     <a class="btn btn-primary" target="_blank" href="@Url.Action("CollateConnData", new { controller = "Maintenance", key = "dev" })">Collate Conn Data</a>
     <a class="btn btn-primary" target="_blank" href="@Url.Action("GenerateFactionHistory", new { controller = "Maintenance", key = "dev", length = 12 })">Generate Faction History</a>
 </div>
-

@@ -1,4 +1,6 @@
 @using DiscoveryApi.Models
+@using Newtonsoft.Json.Linq
+@using Newtonsoft.Json
 @model CacheDisplayModel
 @{
     ViewData["Title"] = "GetCache";
@@ -27,4 +29,20 @@
         <div id="FactionGlobalCache" class="card-block collapse"><pre>@Model.FactionGlobalActivityCache</pre></div>
     </div>
 </div>
-<!-- TODO -->
+<br />
+@{
+    var i = 0;
+}
+@foreach (var kvp in Model.FactionIndividualActivityCache)
+{
+    <div class="card">
+        <div class="card-block">
+            <h4 class="card-title">Faction Individual Activity Cache - @kvp.Key</h4>
+            <h6 class="card-subtitle mb-2 text-muted">@kvp.Value.LastCache.ToString()</h6>
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#FactionIndividualCache-@i.ToString()" aria-expanded="false" aria-controls="FactionIndividualCache-@i.ToString()">Toggle</button>
+            <div id="FactionIndividualCache-@i.ToString()" class="card-block collapse"><pre>@JValue.Parse(kvp.Value.Cache).ToString(Formatting.Indented)</pre></div>
+        </div>
+    </div>
+    <br />
+    i = i + 1;
+}
