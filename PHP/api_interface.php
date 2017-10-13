@@ -66,6 +66,40 @@ else if ($mybb->input['action'] == "faction_summary") {
     eval("\$page = \"".$templates->get("disco")."\";"); 
     output_page($page);
 }
+else if ($mybb->input['action'] == "players") {
+    add_breadcrumb("Individual Activity", THIS_SCRIPT . "?action=players");
+    $curl = curl_init();
+    $page = $mybb->input['page'];
+    if (is_numeric($page)) {
+        $page = intval($page);
+    }
+    if (!is_numeric($page) || $page < 0) {
+            $page = 1;
+    }
+    curl_setopt($curl, CURLOPT_URL, $api_location . "api/Online/GetAllPlayers/" . $api_key . "/" . $page);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $json_data = curl_exec($curl);
+    curl_close($curl);
+
+    if ($json_data != false)
+    {
+        $max_page = json_decode(json_decode($json_data))->MaxPage;
+        $disco_body = 'Page ' . $page . ' of ' . $max_page . '.';
+        if ($page > 1) {
+            $disco_body .= ' <a href="https://discoverygc.com/forums/api_interface.php?action=players&page=' . ($page - 1) . '">Previous</a>';
+        }
+        if ($page < $max_page) {
+            $disco_body .= ' <a href="https://discoverygc.com/forums/api_interface.php?action=players&page=' . ($page + 1) . '">Next</a>';
+        }
+        eval("\$disco_body .= \"".$templates->get("api_all_details")."\";");
+    }
+    else
+    {
+        eval("\$disco_body = \"API Unavailable.\";");
+    }
+    eval("\$page = \"".$templates->get("disco")."\";"); 
+    output_page($page);
+}
 else if ($mybb->input['action'] == "faction_details") {
     add_breadcrumb("Faction Activity", THIS_SCRIPT . "?action=faction_summary");
     if(!$mybb->user['uid'] || $mybb->user['uid'] < 1 )

@@ -92,6 +92,46 @@ namespace DiscoveryApi.Controllers
             return Json(cm.PlayerOnlineCache);
         }
 
+        [HttpGet("{key}/{page}")]
+        public JsonResult GetAllPlayers(string key, string page)
+        {
+            var model = new GlobalDetailsModel();
+
+            var pageInt = -1;
+            if (!Int32.TryParse(page, out pageInt))
+            {
+                model.Error = Ressources.ApiResource.InvalidPageParameter;
+                return Json(model);
+            }
+
+            if (!isValidKey(key))
+            {
+                logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
+                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                return Json(model);
+            }
+
+            CacheManager cm = CacheManager.Instance;
+            if (cm.GlobalIndividualActivityCache == null)
+            {
+                model.Error = Ressources.ApiResource.DataNotYetPopulated;
+                return Json(JsonConvert.SerializeObject(model));
+            }
+
+            var CHARACTERS_PER_PAGE = 1000;
+            if (pageInt < 1 || (pageInt - 1) * CHARACTERS_PER_PAGE >= cm.GlobalIndividualActivityCache.Count)
+            {
+                model.Error = Ressources.ApiResource.PageParameterOutOfBounds;
+                return Json(JsonConvert.SerializeObject(model));
+            }
+
+            model.Timestamp = cm.LastGlobalIndividualActivityCache.ToString("yyyy-MM-ddTHH:mm:ss");
+            int count = Math.Min(cm.GlobalIndividualActivityCache.Count - (pageInt - 1) * CHARACTERS_PER_PAGE, CHARACTERS_PER_PAGE);
+            model.Characters = cm.GlobalIndividualActivityCache.GetRange((pageInt - 1) * CHARACTERS_PER_PAGE, count);
+            model.MaxPage = (int) Math.Ceiling((double) cm.GlobalIndividualActivityCache.Count / CHARACTERS_PER_PAGE);
+            return Json(JsonConvert.SerializeObject(model));
+        }
+
         [HttpGet("{tag}/{key}")]
         public JsonResult GetFactionDetails(string tag, string key)
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DiscoveryApi.Models;
 
 namespace DiscoveryApi.Utils
 {
@@ -43,6 +44,10 @@ namespace DiscoveryApi.Utils
         public string FactionGlobalActivityCache;
         public DateTime LastFactionGlobalActivityCache = new DateTime(0);
         public int FactionGlobalActivityDuration = 900;
+
+        public List<SpecificCharacterActivity> GlobalIndividualActivityCache;
+        public DateTime LastGlobalIndividualActivityCache = new DateTime(0);
+        public int GlobalIndividualCacheDuration = 10800;
 
         public Dictionary<string, FactionCache> FactionIndividualActivityCache = new Dictionary<string, FactionCache>();
         public int FactionIndividualCacheDuration = 900;

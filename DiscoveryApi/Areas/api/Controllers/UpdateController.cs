@@ -236,7 +236,96 @@ namespace DiscoveryApi.Controllers
             }
         }
 
+        private string TimeIntToStr(int Time)
+        {
+            if (Time < 10)
+                return "0" + Time.ToString();
+            else
+                return Time.ToString();
+        }
 
+        private string FormatTime(ulong seconds) {
+            TimeSpan span = TimeSpan.FromSeconds(seconds);
+            if (span.TotalHours < 24) {
+                return string.Format("{0}:{1}:{2}", TimeIntToStr(span.Hours), TimeIntToStr(span.Minutes), TimeIntToStr(span.Seconds));
+            } else {
+                return string.Format("{0}d {1}:{2}:{3}", span.Days, TimeIntToStr(span.Hours), TimeIntToStr(span.Minutes), TimeIntToStr(span.Seconds));
+            }
+        }
+
+        [HttpGet("{key}")]
+        public JsonResult RefreshGlobalActivity(string key)
+        {
+            var model = new UpdateModel();
+
+            if (!isValidKey(key))
+            {
+                logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
+                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                return Json(model);
+            }
+
+            var now = DateTime.UtcNow;
+            var last_month = now.AddMonths(-1);
+            CacheManager cm = CacheManager.Instance;
+
+            var characters = new List<SpecificCharacterActivity>();
+            var q = context.ServerSessions
+                .Where(c => (c.SessionStart.Year == now.Year && c.SessionStart.Month == now.Month) || (c.SessionStart.Year == last_month.Year && c.SessionStart.Month == last_month.Month))
+                .Select(c => new {
+                    c.PlayerName,
+                    c.SessionStart,
+                    SessionGoodDuration = c.ServerSessionsDataConn.Where(x => x.SessionId == c.SessionId && !cm.WastedActivitySystems.Contains(x.Location)).Sum(x => x.Duration)
+                })
+                .GroupBy(c => new {
+                    c.PlayerName,
+                    c.SessionStart.Month
+                })
+                .Select(c => new {
+                    c.Key.PlayerName,
+                    c.Key.Month,
+                    GoodDuration = c.Sum(x => x.SessionGoodDuration)
+                })
+                .OrderByDescending(c => c.GoodDuration);
+
+
+            Dictionary<string, ulong> curr_time = new Dictionary<string, ulong>();
+            Dictionary<string, ulong> last_time = new Dictionary<string, ulong>();
+            foreach (var char_activity in q.ToList()) {
+                if (char_activity.Month == now.Month) {
+                    curr_time[char_activity.PlayerName] = (ulong) char_activity.GoodDuration;
+                } else {
+                    last_time[char_activity.PlayerName] = (ulong) char_activity.GoodDuration;
+                }
+            }
+
+            foreach (KeyValuePair<string, ulong> entry in curr_time) {
+                var ca = new SpecificCharacterActivity();
+                ca.CharName = entry.Key;
+                ca.Current_Time = FormatTime(entry.Value);
+                if (last_time.ContainsKey(entry.Key)) {
+                    ca.Last_Time = FormatTime(last_time[entry.Key]);
+                }
+                characters.Add(ca);
+            }
+
+            foreach (KeyValuePair<string, ulong> entry in last_time) {
+                if (curr_time.ContainsKey(entry.Key)) {
+                    continue;
+                }
+                var ca = new SpecificCharacterActivity();
+                ca.CharName = entry.Key;
+                ca.Last_Time = FormatTime(entry.Value);
+                characters.Add(ca);
+            }
+
+            cm.GlobalIndividualActivityCache = characters;
+            cm.LastGlobalIndividualActivityCache = DateTime.UtcNow;
+
+            model.Error = "OK";
+            logger.LogInformation("Successfully updated global activity report");
+            return Json(model);
+        }
 
         private bool isValidKey(string key)
         {
