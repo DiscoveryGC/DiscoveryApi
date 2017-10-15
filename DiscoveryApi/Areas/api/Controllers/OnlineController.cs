@@ -261,17 +261,8 @@ namespace DiscoveryApi.Controllers
                     if (last_time.ContainsKey(entry.Key)) {
                         last_seconds = last_time[entry.Key];
                     }
-                    TimeSpan cspan = TimeSpan.FromSeconds(curr_seconds);
-                    TimeSpan lspan = TimeSpan.FromSeconds(last_seconds);
-                    if (cspan.TotalHours < 24)
-                        entry.Value.Current_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
-                    else
-                        entry.Value.Current_Time = string.Format("{0}d {1}:{2}:{3}", cspan.Days, TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
-
-                    if (lspan.TotalHours < 24)
-                        entry.Value.Last_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
-                    else
-                        entry.Value.Last_Time = string.Format("{0}d {1}:{2}:{3}", lspan.Days, TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
+                    entry.Value.Current_Time = FormatTime(curr_seconds);
+                    entry.Value.Last_Time = FormatTime(last_seconds);
                 }
 
                 var cache = new FactionCache();
@@ -362,17 +353,8 @@ namespace DiscoveryApi.Controllers
                     }
 
                     //Compile the data
-                    TimeSpan cspan = TimeSpan.FromSeconds(curr_time);
-                    TimeSpan lspan = TimeSpan.FromSeconds(last_time);
-                    if (cspan.TotalHours < 24)
-                        FactionMdl.Current_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
-                    else
-                        FactionMdl.Current_Time = string.Format("{0}d {1}:{2}:{3}", cspan.Days, TimeIntToStr(cspan.Hours), TimeIntToStr(cspan.Minutes), TimeIntToStr(cspan.Seconds));
-
-                    if (lspan.TotalHours < 24)
-                        FactionMdl.Last_Time = string.Format("{0}:{1}:{2}", TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
-                    else
-                        FactionMdl.Last_Time = string.Format("{0}d {1}:{2}:{3}", lspan.Days, TimeIntToStr(lspan.Hours), TimeIntToStr(lspan.Minutes), TimeIntToStr(lspan.Seconds));
+                    FactionMdl.Current_Time = FormatTime(curr_time);
+                    FactionMdl.Last_Time = FormatTime(last_time);
 
                     if (curr_time < cm.Faction_DangerThreshold)
                         FactionMdl.Danger = true;
@@ -402,6 +384,15 @@ namespace DiscoveryApi.Controllers
                 return "0" + Time.ToString();
             else
                 return Time.ToString();
+        }
+
+        private string FormatTime(ulong seconds) {
+            TimeSpan span = TimeSpan.FromSeconds(seconds);
+            if (span.TotalHours < 24) {
+                return string.Format("{0}:{1}:{2}", TimeIntToStr(span.Hours), TimeIntToStr(span.Minutes), TimeIntToStr(span.Seconds));
+            } else {
+                return string.Format("{0}d {1}:{2}:{3}", span.Days, TimeIntToStr(span.Hours), TimeIntToStr(span.Minutes), TimeIntToStr(span.Seconds));
+            }
         }
     }
 }
