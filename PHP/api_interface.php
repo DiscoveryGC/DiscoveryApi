@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 // Including global.php gives us access to a bunch of MyBB functions and variables
 include('./global.php');
 $api_key = "oflsareinsanepeople";
+$players_online_admin_secret_key = 'nope';
 $api_location = "http://localhost:5000/";
 
 
@@ -39,6 +40,57 @@ if ($mybb->input['action'] == "players_online") {
        
     eval("\$page = \"".$templates->get("disco")."\";"); 
     output_page($page);
+}
+else if ($mybb->input['action'] == "players_online_admin") {
+    $gids = explode( ',', $mybb->user['additionalgroups'] );
+    $gids[] = $mybb->user['usergroup'];
+    // Admins, Server Admins
+    $validgroups = array_intersect( $gids, ['4', '6'] );
+    if ( !count( $validgroups ) && hash( 'sha256', $mybb->get_input( 'secret_key' ) ) !== $players_online_admin_secret_key ) {
+        $disco_body = "Unauthorised.";
+    } else {
+        add_breadcrumb("Players Online - Admin view", THIS_SCRIPT . "?action=players_online_admin");
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $api_location . "api/Online/AdminGetPlayers/" . $api_key);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $json_data = curl_exec($curl);
+        curl_close($curl);
+
+        //var_dump($json_data);
+        if ($json_data != false)
+        {
+            $ships = array_map('str_getcsv', file('/mnt/data/web/dgcforum/gamedata/ships.csv'));
+            $ship_names = [];
+            foreach ($ships as $ship_data) {
+                list($nickname, $text) = $ship_data;
+                $ship_names[$nickname] = $text;
+            }
+
+            $ids = array_map('str_getcsv', file('/mnt/data/web/dgcforum/gamedata/ids.csv'));
+            $id_names = [];
+            foreach ($ids as $id_data) {
+                list($nickname, $text) = $id_data;
+                $id_names[$nickname] = $text;
+            }
+
+            $data = json_decode(json_decode($json_data));
+            foreach ($data->Players as $character) {
+                $character->Ship = $ship_names[$character->Ship];
+                $character->ID = $id_names[$character->ID];
+            }
+            $json_data = json_encode(json_encode($data));
+
+            eval("\$disco_body = \"".$templates->get("api_playersonline_admin")."\";"); 
+        }
+        else
+        {
+            eval("\$disco_body = \"API Unavailable.\";");
+        }
+
+    }
+    eval( '$page = "' . $templates->get( "disco" ) . '";' );
+    output_page( $page );
 }
 else if ($mybb->input['action'] == "faction_summary") {
     add_breadcrumb("Faction Activity", THIS_SCRIPT . "?action=faction_summary");

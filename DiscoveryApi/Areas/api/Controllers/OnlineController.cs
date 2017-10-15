@@ -29,7 +29,7 @@ namespace DiscoveryApi.Controllers
         [HttpGet("{key}")]
         public JsonResult GetPlayers(string key)
         {
-            var model = new PlayersOnline();
+            var model = new PlayersOnline<PlayerOnlineSingle>();
             if (!isValidKey(key))
             {
                 logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
@@ -54,7 +54,6 @@ namespace DiscoveryApi.Controllers
                 foreach (var item in players)
                 {
                     var player = new PlayerOnlineSingle();
-                    player.Faction = "Unknown";
                     player.Name = item.PlayerName;
 
                     TimeSpan span = now.Subtract(item.SessionStart);
@@ -90,6 +89,56 @@ namespace DiscoveryApi.Controllers
             }
 
             return Json(cm.PlayerOnlineCache);
+        }
+
+        // GET: /<controller>/
+        [HttpGet("{key}")]
+        public JsonResult AdminGetPlayers(string key)
+        {
+            var model = new PlayersOnline<PlayerOnlineAdmin>();
+            if (!isValidKey(key, true))
+            {
+                logger.LogWarning("Illegal access attempt with key: " + key, ", ip: " + HttpContext.Request.Host);
+                model.Error = Ressources.ApiResource.UnauthorizedAccess;
+                return Json(model);
+            }
+
+            model.Timestamp = CacheManager.Instance.LastUpdate.ToString("yyyy-MM-ddTHH:mm:ss");
+            model.Players = new List<PlayerOnlineAdmin>();
+            var players = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => !c.SessionEnd.HasValue).ToList();
+            var systems = context.Systems.ToList();
+            var regions = context.Regions.ToList();
+
+            foreach (var item in players)
+            {
+                var player = new PlayerOnlineAdmin();
+                player.Name = item.PlayerName;
+
+                //Last location data
+                var last_system = item.ServerSessionsDataConn.LastOrDefault();
+                if (last_system != null)
+                {
+                    var system = systems.SingleOrDefault(c => c.Nickname == last_system.Location.ToUpper()) ?? null;
+
+                    //This is the always expected scenario
+                    player.System = system != null ? system.Name : "Unknown";
+                    player.Region = system != null ? regions.SingleOrDefault(c => c.Id == system.RegionId)?.Name ?? "Unknown" : "Unknown";
+                }
+                else
+                {
+                    //But better be safe than sorry
+                    player.System = "ERROR";
+                    player.Region = "ERROR";
+                }
+
+                player.ID = item.PlayerId;
+                player.Ship = item.PlayerLastShip;
+                player.IP = item.SessionIp;
+
+                model.Players.Add(player);
+            }
+
+            return Json(JsonConvert.SerializeObject(model));
         }
 
         [HttpGet("{tag}/{key}")]
@@ -299,9 +348,9 @@ namespace DiscoveryApi.Controllers
             return Json(cm.FactionGlobalActivityCache);
         }
 
-        private bool isValidKey(string key)
+        private bool isValidKey(string key, bool requireAdmin = false)
         {
-            if (context.ApiKeys.Any(c => c.Key == key))
+            if (context.ApiKeys.Any(c => c.Key == key && (!requireAdmin || c.Admin == true)))
                 return true;
             else
                 return false;

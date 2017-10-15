@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace DiscoveryApi.Models
 {
-    public class PlayersOnline
+    public class PlayersOnline<T>
     {
         public string Error { get; set; }
-        public List<PlayerOnlineSingle> Players { get; set; }
+        public List<T> Players { get; set; }
         public string Timestamp { get; set; }
     }
 
@@ -16,9 +16,18 @@ namespace DiscoveryApi.Models
     {
         public string Time { get; set;}
         public string Name { get; set; }
-        public string Faction { get; set; }
         public string System { get; set; }
         public string Region { get; set; }
         public int Ping { get; set; }
+    }
+
+    public class PlayerOnlineAdmin
+    {
+        public string Name { get; set; }
+        public string System { get; set; }
+        public string Region { get; set; }
+        public string ID { get; set; }
+        public string Ship { get; set; }
+        public string IP { get; set; }
     }
 }

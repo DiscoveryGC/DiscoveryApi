@@ -1,15 +1,18 @@
-/*global document, $, json_data*/
+/*global document, location, URL, $, json_data */
 "use strict";
 
 /* separate asc/desc sort buttons may be implemented by calling sortTable(sortType, direction) and uncommenting the handler code block */
-var rowSelector = ".api-row",
-    nameColNum = 0,
+var nameColNum = 0,
     sysColNum = 1,
     regionColNum = 2,
     pingColNum = 3,
     timeColNum = 4,
+    idColNum = 3,
+    shipColNum = 4,
+    ipColNum = 5,
     currentDir = "descending",
-    prevSort = "";
+    prevSort = "",
+    is_admin = new URL(location).searchParams.get("action") === 'players_online_admin';
 
 function getTimeInt(timeString) {
     var minutes = 0,
@@ -31,16 +34,16 @@ function getTimeInt(timeString) {
 }
 
 function sortTable(currentSort, dir) {
-    var rowArray = Array.from(document.querySelectorAll(rowSelector)),
+    var rowArray = Array.from(document.querySelectorAll(".api_player_row")),
         sortedRowArray = rowArray.sort(function (a, b) {
             var aVal, bVal;
-            if (currentSort === pingColNum) {
+            if (currentSort === pingColNum && !is_admin) {
                 aVal = parseInt(a.children[currentSort].innerText, 10);
                 bVal = parseInt(b.children[currentSort].innerText, 10);
-            } else if (currentSort === timeColNum) {
+            } else if (currentSort === timeColNum && !is_admin) {
                 aVal = parseInt(getTimeInt(a.children[currentSort].innerText), 10);
                 bVal = parseInt(getTimeInt(b.children[currentSort].innerText), 10);
-            } else if ([nameColNum, sysColNum, regionColNum].indexOf(currentSort) !== -1) {
+            } else {
                 aVal = a.children[currentSort].innerText.toLowerCase();
                 bVal = b.children[currentSort].innerText.toLowerCase();
             }
@@ -76,12 +79,6 @@ $(document).ready(function () {
     var table_tag = document.getElementById("api-body"),
         timestamp_tag = document.getElementById("player_timestamp"),
         count_tag = document.getElementById("player_count"),
-        tcats = document.querySelectorAll(".api-headers .tcat"),
-        nameSortTrigger = tcats[nameColNum],
-        systemSortTrigger = tcats[sysColNum],
-        regionSortTrigger = tcats[regionColNum],
-        pingSortTrigger = tcats[pingColNum],
-        timeSortTrigger = tcats[timeColNum],
         i,
         timestamp_date,
         item,
@@ -90,14 +87,17 @@ $(document).ready(function () {
         system_e,
         region_e,
         ping_e,
-        time_e;
+        time_e,
+        id_e,
+        ship_e,
+        ip_e,
+        ip_a_e;
 
     if (json_data) {
         //http://i.imgur.com/nqvSjOB.jpg
         timestamp_date = new Date(json_data.Timestamp);
         timestamp_tag.innerText = timestamp_date.toLocaleString();
         count_tag.innerText = json_data.Players.length;
-
         for (i = 0; i < json_data.Players.length; i += 1) {
             item = json_data.Players[i];
 
@@ -116,35 +116,38 @@ $(document).ready(function () {
             region_e.innerText = item.Region;
             row_e.appendChild(region_e);
 
-            ping_e = document.createElement("td");
-            ping_e.innerText = item.Ping;
-            row_e.appendChild(ping_e);
+            if (is_admin) {
+                id_e = document.createElement("td");
+                id_e.innerText = item.ID;
+                row_e.appendChild(id_e);
 
-            time_e = document.createElement("td");
-            time_e.innerText = item.Time;
-            row_e.appendChild(time_e);
+                ship_e = document.createElement("td");
+                ship_e.innerText = item.Ship;
+                row_e.appendChild(ship_e);
+
+                ip_e = document.createElement("td");
+                ip_a_e = document.createElement("a");
+                ip_a_e.href = "https://discoverygc.com/forums/modcp.php?action=ipsearch&search_users=1&search_posts=1&ipaddress=" + item.IP;
+                ip_a_e.innerText = item.IP;
+                ip_e.appendChild(ip_a_e);
+                row_e.appendChild(ip_e);
+            } else {
+                ping_e = document.createElement("td");
+                ping_e.innerText = item.Ping;
+                row_e.appendChild(ping_e);
+
+                time_e = document.createElement("td");
+                time_e.innerText = item.Time;
+                row_e.appendChild(time_e);
+            }
 
             table_tag.appendChild(row_e);
         }
     }
 
-    nameSortTrigger.addEventListener("click", function () {
-        sortTable(nameColNum, currentDir);
-    });
-
-    systemSortTrigger.addEventListener("click", function () {
-        sortTable(sysColNum, currentDir);
-    });
-
-    regionSortTrigger.addEventListener("click", function () {
-        sortTable(regionColNum, currentDir);
-    });
-
-    pingSortTrigger.addEventListener("click", function () {
-        sortTable(pingColNum, currentDir);
-    });
-
-    timeSortTrigger.addEventListener("click", function () {
-        sortTable(timeColNum, currentDir);
+    $(".api-headers .tcat").each(function (index) {
+        this.addEventListener("click", function () {
+            sortTable(index, currentDir);
+        } );
     });
 });
