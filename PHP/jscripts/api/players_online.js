@@ -2,17 +2,17 @@
 "use strict";
 
 /* separate asc/desc sort buttons may be implemented by calling sortTable(sortType, direction) and uncommenting the handler code block */
-var nameColNum = 0,
+var /*nameColNum = 0,
     sysColNum = 1,
-    regionColNum = 2,
+    regionColNum = 2,*/
     pingColNum = 3,
     timeColNum = 4,
-    idColNum = 3,
+    /*idColNum = 3,
     shipColNum = 4,
-    ipColNum = 5,
+    ipColNum = 5,*/
     currentDir = "descending",
     prevSort = "",
-    is_admin = new URL(location).searchParams.get("action") === 'players_online_admin';
+    is_admin = new URL(location).searchParams.get("action") === "players_online_admin";
 
 function getTimeInt(timeString) {
     var minutes = 0,
@@ -145,9 +145,9 @@ $(document).ready(function () {
         }
     }
 
-    $(".api-headers .tcat").each(function (index) {
-        this.addEventListener("click", function () {
+    $(".api-headers .tcat").each(function (index, element) {
+        element.addEventListener("click", function () {
             sortTable(index, currentDir);
-        } );
+        });
     });
 });
