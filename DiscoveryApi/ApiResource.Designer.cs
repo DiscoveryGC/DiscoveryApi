@@ -102,5 +102,23 @@ namespace Ressources {
                 return ResourceManager.GetString("FactionNotFound", resourceCulture);
             }
         }
+
+        public static string InvalidPageParameter {
+            get {
+                return ResourceManager.GetString("InvalidPageParameter", resourceCulture);
+            }
+        }
+
+        public static string PageParameterOutOfBounds {
+            get {
+                return ResourceManager.GetString("PageParameterOutOfBounds", resourceCulture);
+            }
+        }
+
+        public static string DataNotYetPopulated {
+            get {
+                return ResourceManager.GetString("DataNotYetPopulated", resourceCulture);
+            }
+        }
     }
 }
