@@ -2,14 +2,14 @@
 "use strict";
 
 /* separate asc/desc sort buttons may be implemented by calling sortTable(sortType, direction) and uncommenting the handler code block */
-var /*nameColNum = 0,
+/*  nameColNum = 0,
     sysColNum = 1,
-    regionColNum = 2,*/
-    pingColNum = 3,
-    timeColNum = 4,
-    /*idColNum = 3,
+    regionColNum = 2,
+    idColNum = 3,
     shipColNum = 4,
-    ipColNum = 5,*/
+    ipColNum = 5*/
+var pingColNum = 3,
+    timeColNum = 4,
     currentDir = "descending",
     prevSort = "",
     is_admin = new URL(location).searchParams.get("action") === "players_online_admin";
