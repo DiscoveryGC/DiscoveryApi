@@ -1,0 +1,146 @@
+FORMAT: 1A
+
+# DiscoveryGC API
+This API can be used to pull various bits of data from the Discovery Freelancer game server. Note: This documentation only covers the Online part, not Update, Admin or Maintenance. It also doesn't cover the AdminGetPlayers function.
+
+# Group Online
+Pull live data from the server.
+
+## Get Players  [/Online/GetPlayers/{key}]
+
++ Parameters
+    + key - your private API key
+
+### Get Online Players [GET]
+
++ Response 200 (application/json)
+
+        {
+            "Error": null,
+            "Players": [
+                {
+                    "Time": "2h02",
+                    "Name": "John.Doe",
+                    "System": "New York",
+                    "Region": "Liberty Space",
+                    "Ping": 42
+                },
+                {
+                    "Time": "1h09",
+                    "Name": "Jane.Doe",
+                    "System": "New London",
+                    "Region": "Bretonia Space",
+                    "Ping": 57
+                }
+            ],
+            "Timestamp": "2017-10-17T20:36:01"
+        }
+
+## Get Faction Summary [/Online/GetFactionSummary/{key}]
+
++ Parameters
+    + key - your private API key
+
+### Get Faction Summary [GET]
+
++ Response 200 (application/json)
+
+        {
+            "Error": null,
+            "Factions": [
+                {
+                    "Id": 1,
+                    "Tag": "LPI-",
+                    "Name": "Liberty Police Incorporated",
+                    "Current_Time": "08:26:27",
+                    "Last_Time": "14:55:41",
+                    "Danger": false
+                },
+                {
+                    "Id": 2,
+                    "Tag": "[LN]",
+                    "Name": "Liberty Navy",
+                    "Current_Time": "23:19:35",
+                    "Last_Time": "1d 11:30:20",
+                    "Danger": false
+                },
+            ],
+            "Timestamp": "2017-10-17T20:36:01"
+        }
+
+## Get Faction Details [/Online/GetFactionDetails/{tag}/{key}]
+
++ Parameters
+    + tag - the tag of the faction
+    + key - your private API key
+
+### Get Faction Details [GET]
+
++ Response 200 (application/json)
+
+        {
+            "Error": null,
+            "Characters": {
+                "IMG|Tom:Marsh": {
+                    "Current_Time": "00:10:10",
+                    "Last_Time": "05:57:33"
+                },
+                "IMG|Tom,Marsh.": {
+                    "Current_Time": "01:28:10",
+                    "Last_Time": "04:11:01"
+                },
+                "IMG|Tom,Marsh": {
+                    "Current_Time": "00:00:00",
+                    "Last_Time": "00:38:38"
+                },
+                "IMG|TomMarsh": {
+                    "Current_Time": "00:00:00",
+                    "Last_Time": "00:09:11"
+                },
+                "IMG|Tom.Marsh,": {
+                    "Current_Time": "00:00:00",
+                    "Last_Time": "00:08:25"
+                },
+                "IMG|Tom.Marsh.": {
+                    "Current_Time": "00:00:00",
+                    "Last_Time": "00:20:50"
+                },
+                "IMG|Tom-Marsh": {
+                    "Current_Time": "00:00:00",
+                    "Last_Time": "00:51:40"
+                },
+                "IMG|Tom_Marsh": {
+                    "Current_Time": "00:00:00",
+                    "Last_Time": "00:01:01"
+                }
+            },
+            "Timestamp": "2017-11-04T17:24:52"
+        }
+
+## Get Player Status [/Online/GetAllPlayers/{key}/{page}]
+
++ Parameters
+    + key - your private API key
+    + page - the page you want to retrieve the results from. Pages are sorted by activity.
+
+### Get All Players [GET]
+
++ Response 200 (application/json)
+
+        {
+            "Error": null,
+            "Characters": [
+                {
+                    "CharName": "John.Doe",
+                    "Current_Time": "3d 03:54:22",
+                    "Last_Time": "2d 04:23:11"
+                },
+                {
+                    "CharName": "Jane.Doe",
+                    "Current_Time": "21:35:22",
+                    "Last_Time": "15:07:59"
+                }
+            ],
+            "MaxPage": 12,
+            "Timestamp": "2017-10-17T20:36:01"
+        }
