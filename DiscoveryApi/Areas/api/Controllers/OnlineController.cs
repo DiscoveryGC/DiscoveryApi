@@ -192,6 +192,9 @@ namespace DiscoveryApi.Controllers
                 return Json(model);
             }
 
+            // Kestrel is retarded and decodes most stuff, just not the forward slash character which is used in Auxesia's tag of A/)-
+            tag = tag.Replace("%2F", "/");
+
             var now = DateTime.UtcNow;
             CacheManager cm = CacheManager.Instance;
 
