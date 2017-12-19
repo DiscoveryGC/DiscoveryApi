@@ -76,8 +76,8 @@ else if ($mybb->input['action'] == "players_online_admin") {
 
             $data = json_decode(json_decode($json_data));
             foreach ($data->Players as $character) {
-                $character->Ship = $ship_names[$character->Ship];
-                $character->ID = $id_names[$character->ID];
+                $character->ShipName = $ship_names[$character->Ship];
+                $character->IDName = $id_names[$character->ID];
             }
             $json_data = json_encode(json_encode($data));
 

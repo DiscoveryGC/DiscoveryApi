@@ -34,6 +34,7 @@ $(function () {
         //http://i.imgur.com/nqvSjOB.jpg
         $('#player_timestamp').text(new Date(json_data.Timestamp).toLocaleString());
         $('#player_count').text(json_data.Players.length);
+        var seenIPs = {};
         $.prototype.append.apply($('#api-body'), $.map(json_data.Players, function (item) {
             var $row = $('<tr>')
                 .addClass('api_player_row')
@@ -43,9 +44,13 @@ $(function () {
                     $('<td>').text(item.Region)
                 );
             if (is_admin) {
+                if (!(item.IP in seenIPs)) {
+                    seenIPs[item.IP] = [];
+                }
+                seenIPs[item.IP].push($row);
                 $row.append(
-                    $('<td>').text(item.ID),
-                    $('<td>').text(item.Ship),
+                    $('<td>').text(item.IDName).data('nickname', item.ID),
+                    $('<td>').text(item.ShipName).data('nickname', item.Ship),
                     $('<td>').append(
                         $('<a>')
                             .attr('href', "modcp.php?action=ipsearch&search_users=1&search_posts=1&ipaddress=" + item.IP)
@@ -61,6 +66,15 @@ $(function () {
 
             return $row;
         }));
+        if (is_admin) {
+            $.each(seenIPs, function (ip, rows) {
+                if (rows.length > 1) {
+                    $.each(rows, function () {
+                        $(this).find(':nth-child(6)').css('background-color', 'red');
+                    });
+                }
+            });
+        }
     }
 
     $(".api-headers .tcat").each(function (index, element) {
@@ -72,7 +86,7 @@ $(function () {
                 parser = parseHM;
             } else if (index === ipColNum && is_admin) {
                 parser = function (cell) {
-                    var parts = cell.split('.').map(function (e, i) { return parseInt(e, 10) << 8*(3 - i); });
+                    var parts = cell.split('.').map(function (e, i) { return parseInt(e, 10) * (2 ** 8) ** (3 - i); });
                     return parts[0] + parts[1] + parts[2] + parts[3];
                 }
             }
