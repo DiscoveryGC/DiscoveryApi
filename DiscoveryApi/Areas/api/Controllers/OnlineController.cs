@@ -63,7 +63,7 @@ namespace DiscoveryApi.Controllers
                         player.Time = span.Minutes.ToString() + "m";
 
                     //Last location data
-                    var last_system = item.ServerSessionsDataConn.LastOrDefault();
+                    var last_system = item.ServerSessionsDataConn.OrderByDescending(c => c.Stamp).FirstOrDefault();
                     if (last_system != null)
                     {
                         var system = systems.SingleOrDefault(c => c.Nickname == last_system.Location.ToUpper()) ?? null;
