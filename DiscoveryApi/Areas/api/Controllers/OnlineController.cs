@@ -213,11 +213,14 @@ namespace DiscoveryApi.Controllers
                 var start_last = start_now.AddMonths(-1);
                 var end_last = new DateTime(start_last.Year, start_last.Month, DateTime.DaysInMonth(start_last.Year, start_last.Month), 23, 59, 59, 999);
 
+                var start_last3 = start_now.AddMonths(-3);
+
                 model.Timestamp = now.ToString("yyyy-MM-ddTHH:mm:ss");
                 model.Characters = new Dictionary<string, CharacterActivity>();
 
                 Dictionary<string, ulong> curr_time = new Dictionary<string, ulong>();
                 Dictionary<string, ulong> last_time = new Dictionary<string, ulong>();
+                Dictionary<string, ulong> last3_time = new Dictionary<string, ulong>();
 
                 //Get all sessions for the current month
                 var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
@@ -236,6 +239,8 @@ namespace DiscoveryApi.Controllers
                         }
                     }
                 }
+
+                // Get all sessions for last month
                 sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
                 foreach (var session in sessions)
                 {
@@ -253,19 +258,42 @@ namespace DiscoveryApi.Controllers
                     }
                 }
 
+                // Get all sessions for the last three months
+                sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_last3 && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
+                foreach (var session in sessions)
+                {
+                    model.Characters[session.PlayerName] = new CharacterActivity();
+                    last3_time[session.PlayerName] = 0;
+                }
+                foreach (var session in sessions)
+                {
+                    foreach (var system in session.ServerSessionsDataConn)
+                    {
+                        if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                        {
+                            last3_time[session.PlayerName] += (ulong)system.Duration;
+                        }
+                    }
+                }
+
                 foreach (KeyValuePair<string, CharacterActivity> entry in model.Characters)
                 {
                     //Compile the data
                     ulong curr_seconds = 0;
                     ulong last_seconds = 0;
+                    ulong last3_seconds = 0;
                     if (curr_time.ContainsKey(entry.Key)) {
                         curr_seconds = curr_time[entry.Key];
                     }
                     if (last_time.ContainsKey(entry.Key)) {
                         last_seconds = last_time[entry.Key];
                     }
+                    if (last3_time.ContainsKey(entry.Key)) {
+                        last3_seconds = last3_time[entry.Key];
+                    }
                     entry.Value.Current_Time = FormatTime(curr_seconds);
                     entry.Value.Last_Time = FormatTime(last_seconds);
+                    entry.Value.Last3_Time = FormatTime(last3_seconds);
                 }
 
                 var cache = new FactionCache();
@@ -302,6 +330,8 @@ namespace DiscoveryApi.Controllers
                 var start_last = start_now.AddMonths(-1);
                 var end_last = new DateTime(start_last.Year, start_last.Month, DateTime.DaysInMonth(start_last.Year, start_last.Month), 23, 59, 59, 999);
 
+                var start_last3 = start_now.AddMonths(-3);
+
                 var Factions = context.ServerFactions.ToList();
                 foreach (var faction in Factions)
                 {
@@ -313,6 +343,7 @@ namespace DiscoveryApi.Controllers
 
                     ulong curr_time = 0;
                     ulong last_time = 0;
+                    ulong last3_time = 0;
                     
                     //Potentially existing activity records
                     var FactionActivity = context.ServerFactionsActivity.Where(c => c.FactionId == faction.Id).ToList();
@@ -355,9 +386,38 @@ namespace DiscoveryApi.Controllers
                         }
                     }
 
+                    //Get the sessions of the previous 3 month
+                    for (int i = 0; i < 3; i++) {
+                        var start_last3_thismonth = start_last3.AddMonths(i);
+                        var end_last3_thismonth = new DateTime(start_last3_thismonth.Year, start_last3_thismonth.Month, DateTime.DaysInMonth(start_last3_thismonth.Year, start_last3_thismonth.Month), 23, 59, 59, 999);
+                        if (FactionActivity.Any(c => c.Stamp == start_last3_thismonth))
+                        {
+                            var activity = FactionActivity.SingleOrDefault(c => c.Stamp == start_last3_thismonth);
+                            last3_time += activity.Duration;
+                        }
+                        else
+                        {
+                            //The values have not yet been precalculated
+                            // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
+                            sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_last3_thismonth && c.SessionStart <= end_last3_thismonth && c.SessionEnd.HasValue).ToList();
+                            foreach (var item in sessions)
+                            {
+                                foreach (var system in item.ServerSessionsDataConn)
+                                {
+                                    if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                                    {
+                                        //not wasted
+                                        last3_time += (ulong)system.Duration;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     //Compile the data
                     FactionMdl.Current_Time = FormatTime(curr_time);
                     FactionMdl.Last_Time = FormatTime(last_time);
+                    FactionMdl.Last3_Time = FormatTime(last3_time);
 
                     if (curr_time < cm.Faction_DangerThreshold)
                         FactionMdl.Danger = true;

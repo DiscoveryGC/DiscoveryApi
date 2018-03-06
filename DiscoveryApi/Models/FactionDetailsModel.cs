@@ -16,5 +16,6 @@ namespace DiscoveryApi.Models
     {
         public string Current_Time { get; set; }
         public string Last_Time { get; set; }
+        public string Last3_Time { get; set; }
     }
 }
