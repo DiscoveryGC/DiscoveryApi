@@ -322,6 +322,7 @@ namespace DiscoveryApi.Controllers
             //Check if we have to renew the cache
             if (cm.LastFactionGlobalActivityCache.AddSeconds(cm.FactionGlobalActivityDuration) < now)
             {
+                logger.LogInformation("Starting GetFactionSummary cache renewal", now);
                 model.Timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");
                 model.Factions = new List<FactionSummarySingle>();
                 
@@ -349,8 +350,13 @@ namespace DiscoveryApi.Controllers
                     var FactionActivity = context.ServerFactionsActivity.Where(c => c.FactionId == faction.Id).ToList();
 
                     //Get all sessions for the current month
-                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
-                    foreach (var item in sessions)
+                    var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue);
+                    if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
+                        sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
+                    } else {
+                        sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
+                    }
+                    foreach (var item in sessions.ToList())
                     {
                         foreach (var system in item.ServerSessionsDataConn)
                         {
@@ -372,8 +378,13 @@ namespace DiscoveryApi.Controllers
                     {
                         //The values have not yet been precalculated
                         // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
-                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
-                        foreach (var item in sessions)
+                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue);
+                        if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
+                            sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
+                        } else {
+                            sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
+                        }
+                        foreach (var item in sessions.ToList())
                         {
                             foreach (var system in item.ServerSessionsDataConn)
                             {
@@ -399,8 +410,13 @@ namespace DiscoveryApi.Controllers
                         {
                             //The values have not yet been precalculated
                             // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
-                            sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_last3_thismonth && c.SessionStart <= end_last3_thismonth && c.SessionEnd.HasValue).ToList();
-                            foreach (var item in sessions)
+                            sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last3_thismonth && c.SessionStart <= end_last3_thismonth && c.SessionEnd.HasValue);
+                            if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
+                                sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
+                            } else {
+                                sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
+                            }
+                            foreach (var item in sessions.ToList())
                             {
                                 foreach (var system in item.ServerSessionsDataConn)
                                 {
@@ -428,6 +444,8 @@ namespace DiscoveryApi.Controllers
 
                 cm.FactionGlobalActivityCache = JsonConvert.SerializeObject(model);
                 cm.LastFactionGlobalActivityCache = DateTime.UtcNow;
+
+                logger.LogInformation("Ending GetFactionSummary cache renewal", cm.LastFactionGlobalActivityCache);
             }
 
             return Json(cm.FactionGlobalActivityCache);
