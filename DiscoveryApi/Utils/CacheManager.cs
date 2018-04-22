@@ -43,7 +43,6 @@ namespace DiscoveryApi.Utils
 
         public string FactionGlobalActivityCache;
         public DateTime LastFactionGlobalActivityCache = new DateTime(0);
-        public int FactionGlobalActivityDuration = 900;
 
         public List<SpecificCharacterActivity> GlobalIndividualActivityCache;
         public DateTime LastGlobalIndividualActivityCache = new DateTime(0);
