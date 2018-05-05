@@ -8,7 +8,6 @@ error_reporting(E_ALL);
 // Including global.php gives us access to a bunch of MyBB functions and variables
 include('./global.php');
 $api_key = "oflsareinsanepeople";
-$players_online_admin_secret_key = 'nope';
 $api_location = "http://localhost:5000/";
 
 
@@ -46,7 +45,7 @@ else if ($mybb->input['action'] == "players_online_admin") {
     $gids[] = $mybb->user['usergroup'];
     // Admins, Server Admins
     $validgroups = array_intersect( $gids, ['4', '6'] );
-    if ( !count( $validgroups ) && hash( 'sha256', $mybb->get_input( 'secret_key' ) ) !== $players_online_admin_secret_key ) {
+    if ( !count( $validgroups ) ) {
         $disco_body = "Unauthorised.";
     } else {
         add_breadcrumb("Players Online - Admin view", THIS_SCRIPT . "?action=players_online_admin");
@@ -184,7 +183,28 @@ else if ($mybb->input['action'] == "faction_details") {
 }
 else
 {
-    eval("\$disco_body = \"Uhhhhh\";");
+    $available = [
+        'players_online' => 'Players Online',
+        'faction_summary' => 'Faction Summary',
+        'players' => 'Players'
+    ];
+    // faction_details doesn't make sense from here, users for that should go via faction_summary
+
+    $gids = explode( ',', $mybb->user['additionalgroups'] );
+    $gids[] = $mybb->user['usergroup'];
+    // Admins, Server Admins
+    $validgroups = array_intersect( $gids, ['4', '6'] );
+    if ( count( $validgroups ) ) {
+        $available['players_online_admin'] = 'Players Online (Admin)';
+    }
+
+    $html = "<ul>";
+    foreach ( $available as $action => $text ) {
+        $html .= "<li><a href=\\\"?action=$action\\\">$text</a></li>";
+    }
+    $html .= "</ul>";
+
+    eval("\$disco_body = \"$html\";");
     eval("\$page = \"".$templates->get("disco")."\";"); 
     output_page($page);
 }
