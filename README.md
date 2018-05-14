@@ -1,6 +1,5 @@
 # DiscoveryApi
 This is the repository of the Discovery API.
-It now does things.
 
 # What does it do
 The primary objective of this API is to replace the old PHP model system that tends to be very unstable.
