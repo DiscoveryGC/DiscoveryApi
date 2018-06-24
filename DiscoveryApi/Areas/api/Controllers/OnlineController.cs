@@ -210,6 +210,9 @@ namespace DiscoveryApi.Controllers
             {
                 var start_now = new DateTime(now.Year, now.Month, 1, 0, 0, 0, 0);
 
+                var quarter_start_month = ((int) Math.Floor((double) (now.Month - 1) / 3)) * 3 + 1;
+                var start_now_quarter = new DateTime(now.Year, quarter_start_month, 1, 0, 0, 0, 0);
+
                 var start_last = start_now.AddMonths(-1);
                 var end_last = new DateTime(start_last.Year, start_last.Month, DateTime.DaysInMonth(start_last.Year, start_last.Month), 23, 59, 59, 999);
 
@@ -220,6 +223,7 @@ namespace DiscoveryApi.Controllers
 
                 Dictionary<string, ulong> curr_time = new Dictionary<string, ulong>();
                 Dictionary<string, ulong> last_time = new Dictionary<string, ulong>();
+                Dictionary<string, ulong> curr_quarter_time = new Dictionary<string, ulong>();
                 Dictionary<string, ulong> last3_time = new Dictionary<string, ulong>();
 
                 //Get all sessions for the current month
@@ -258,6 +262,24 @@ namespace DiscoveryApi.Controllers
                     }
                 }
 
+                // Get all sessions for the current quarter
+                sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_now_quarter && c.SessionStart <= now && c.SessionEnd.HasValue).ToList();
+                foreach (var session in sessions)
+                {
+                    model.Characters[session.PlayerName] = new CharacterActivity();
+                    curr_quarter_time[session.PlayerName] = 0;
+                }
+                foreach (var session in sessions)
+                {
+                    foreach (var system in session.ServerSessionsDataConn)
+                    {
+                        if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                        {
+                            curr_quarter_time[session.PlayerName] += (ulong)system.Duration;
+                        }
+                    }
+                }
+
                 // Get all sessions for the last three months
                 sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => (((faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") && c.PlayerName.Contains(faction.FactionTag)) || c.PlayerName.StartsWith(faction.FactionTag)) && c.SessionStart >= start_last3 && c.SessionStart <= end_last && c.SessionEnd.HasValue).ToList();
                 foreach (var session in sessions)
@@ -281,6 +303,7 @@ namespace DiscoveryApi.Controllers
                     //Compile the data
                     ulong curr_seconds = 0;
                     ulong last_seconds = 0;
+                    ulong curr_quarter_seconds = 0;
                     ulong last3_seconds = 0;
                     if (curr_time.ContainsKey(entry.Key)) {
                         curr_seconds = curr_time[entry.Key];
@@ -288,11 +311,15 @@ namespace DiscoveryApi.Controllers
                     if (last_time.ContainsKey(entry.Key)) {
                         last_seconds = last_time[entry.Key];
                     }
+                    if (curr_quarter_time.ContainsKey(entry.Key)) {
+                        curr_quarter_seconds = curr_quarter_time[entry.Key];
+                    }
                     if (last3_time.ContainsKey(entry.Key)) {
                         last3_seconds = last3_time[entry.Key];
                     }
                     entry.Value.Current_Time = FormatTime(curr_seconds);
                     entry.Value.Last_Time = FormatTime(last_seconds);
+                    entry.Value.Current_Quarter_Time = FormatTime(curr_quarter_seconds);
                     entry.Value.Last3_Time = FormatTime(last3_seconds);
                 }
 

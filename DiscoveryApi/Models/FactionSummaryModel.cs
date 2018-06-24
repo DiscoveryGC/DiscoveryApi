@@ -19,6 +19,7 @@ namespace DiscoveryApi.Models
         public string Name { get; set; }
         public string Current_Time { get; set; }
         public string Last_Time { get; set; }
+        public string Current_Quarter_Time { get; set; }
         public string Last3_Time { get; set; }
         public bool Danger { get; set; }
     }

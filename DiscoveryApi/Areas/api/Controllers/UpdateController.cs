@@ -349,6 +349,9 @@ namespace DiscoveryApi.Controllers
             
             var start_now = new DateTime(now.Year, now.Month, 1, 0, 0, 0, 0);
 
+            var quarter_start_month = ((int) Math.Floor((double) (now.Month - 1) / 3)) * 3 + 1;
+            var start_now_quarter = new DateTime(now.Year, quarter_start_month, 1, 0, 0, 0, 0);
+
             var start_last = start_now.AddMonths(-1);
             var end_last = new DateTime(start_last.Year, start_last.Month, DateTime.DaysInMonth(start_last.Year, start_last.Month), 23, 59, 59, 999);
 
@@ -365,6 +368,7 @@ namespace DiscoveryApi.Controllers
 
                 ulong curr_time = 0;
                 ulong last_time = 0;
+                ulong curr_quarter_time = 0;
                 ulong last3_time = 0;
                 
                 //Potentially existing activity records
@@ -418,6 +422,39 @@ namespace DiscoveryApi.Controllers
                     }
                 }
 
+                //Get the sessions of the previous months in this quarter
+                for (int i = 0; i < 3; i++) {
+                    var start_quarter_thismonth = start_now_quarter.AddMonths(i);
+                    var end_quarter_thismonth = new DateTime(start_quarter_thismonth.Year, start_quarter_thismonth.Month, DateTime.DaysInMonth(start_quarter_thismonth.Year, start_quarter_thismonth.Month), 23, 59, 59, 999);
+                    if (FactionActivity.Any(c => c.Stamp == start_quarter_thismonth))
+                    {
+                        var activity = FactionActivity.SingleOrDefault(c => c.Stamp == start_quarter_thismonth);
+                        curr_quarter_time += activity.Duration;
+                    }
+                    else
+                    {
+                        //The values have not yet been precalculated
+                        // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
+                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_quarter_thismonth && c.SessionStart <= end_quarter_thismonth && c.SessionEnd.HasValue);
+                        if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
+                            sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
+                        } else {
+                            sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
+                        }
+                        foreach (var item in sessions.ToList())
+                        {
+                            foreach (var system in item.ServerSessionsDataConn)
+                            {
+                                if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
+                                {
+                                    //not wasted
+                                    curr_quarter_time += (ulong)system.Duration;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 //Get the sessions of the previous 3 month
                 for (int i = 0; i < 3; i++) {
                     var start_last3_thismonth = start_last3.AddMonths(i);
@@ -454,6 +491,7 @@ namespace DiscoveryApi.Controllers
                 //Compile the data
                 FactionMdl.Current_Time = FormatTime(curr_time);
                 FactionMdl.Last_Time = FormatTime(last_time);
+                FactionMdl.Current_Quarter_Time = FormatTime(curr_quarter_time);
                 FactionMdl.Last3_Time = FormatTime(last3_time);
 
                 if (curr_time < cm.Faction_DangerThreshold)

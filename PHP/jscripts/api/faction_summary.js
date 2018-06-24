@@ -23,6 +23,7 @@ $(function () {
                     $('<td>').text(item.Tag),
                     $('<td>').text(item.Current_Time),
                     $('<td>').text(item.Last_Time),
+                    $('<td>').text(item.Current_Quarter_Time),
                     $('<td>').text(item.Last3_Time)
                 );
         }));
