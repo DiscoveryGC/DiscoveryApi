@@ -240,10 +240,9 @@ namespace DiscoveryApi.Controllers
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
-                    curr_time[session.PlayerName] = 0;
-                }
-                foreach (var session in sessions.ToList())
-                {
+                    if (!curr_time.ContainsKey(session.PlayerName)) {
+                        curr_time[session.PlayerName] = 0;
+                    }
                     foreach (var system in session.ServerSessionsDataConn)
                     {
                         if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
@@ -258,10 +257,9 @@ namespace DiscoveryApi.Controllers
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
-                    last_time[session.PlayerName] = 0;
-                }
-                foreach (var session in sessions.ToList())
-                {
+                    if (!last_time.ContainsKey(session.PlayerName)) {
+                        last_time[session.PlayerName] = 0;
+                    }
                     foreach (var system in session.ServerSessionsDataConn)
                     {
                         if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
@@ -276,10 +274,9 @@ namespace DiscoveryApi.Controllers
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
-                    curr_quarter_time[session.PlayerName] = 0;
-                }
-                foreach (var session in sessions.ToList())
-                {
+                    if (!curr_quarter_time.ContainsKey(session.PlayerName)) {
+                        curr_quarter_time[session.PlayerName] = 0;
+                    }
                     foreach (var system in session.ServerSessionsDataConn)
                     {
                         if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
@@ -294,10 +291,9 @@ namespace DiscoveryApi.Controllers
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
-                    last3_time[session.PlayerName] = 0;
-                }
-                foreach (var session in sessions.ToList())
-                {
+                    if (!last3_time.ContainsKey(session.PlayerName)) {
+                        last3_time[session.PlayerName] = 0;
+                    }
                     foreach (var system in session.ServerSessionsDataConn)
                     {
                         if (!cm.WastedActivitySystems.Contains(system.Location.ToUpper()))
