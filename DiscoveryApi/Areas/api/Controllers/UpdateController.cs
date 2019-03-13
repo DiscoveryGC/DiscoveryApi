@@ -374,11 +374,17 @@ namespace DiscoveryApi.Controllers
                 //Potentially existing activity records
                 var FactionActivity = context.ServerFactionsActivity.Where(c => c.FactionId == faction.Id).ToList();
 
+                // TODO: Code duplication is way out of control here, we really need to move some of this out to a function that can be reused for each of the different periods
+
                 //Get all sessions for the current month
-                var sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue);
+                IQueryable<ServerSessions> sessions = context.ServerSessions;
+                if (faction.FactionTag == "L\\-") {
+                    sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
+                }
+                sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue);
                 if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
                     sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                } else {
+                } else if (faction.FactionTag != "L\\-") {
                     sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
                 }
                 foreach (var item in sessions.ToList())
@@ -403,10 +409,14 @@ namespace DiscoveryApi.Controllers
                 {
                     //The values have not yet been precalculated
                     // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
-                    sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue);
+                    sessions = context.ServerSessions;
+                    if (faction.FactionTag == "L\\-") {
+                        sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
+                    }
+                    sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue);
                     if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
                         sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                    } else {
+                    } else if (faction.FactionTag != "L\\-") {
                         sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
                     }
                     foreach (var item in sessions.ToList())
@@ -435,10 +445,14 @@ namespace DiscoveryApi.Controllers
                     {
                         //The values have not yet been precalculated
                         // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
-                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_quarter_thismonth && c.SessionStart <= end_quarter_thismonth && c.SessionEnd.HasValue);
+                        sessions = context.ServerSessions;
+                        if (faction.FactionTag == "L\\-") {
+                            sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
+                        }
+                        sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_quarter_thismonth && c.SessionStart <= end_quarter_thismonth && c.SessionEnd.HasValue);
                         if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
                             sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                        } else {
+                        } else if (faction.FactionTag != "L\\-")  {
                             sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
                         }
                         foreach (var item in sessions.ToList())
@@ -468,10 +482,14 @@ namespace DiscoveryApi.Controllers
                     {
                         //The values have not yet been precalculated
                         // I feel very hesitant to allow recalculations to be performed here, so I will not do it for now
-                        sessions = context.ServerSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last3_thismonth && c.SessionStart <= end_last3_thismonth && c.SessionEnd.HasValue);
+                        sessions = context.ServerSessions;
+                        if (faction.FactionTag == "L\\-") {
+                            sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
+                        }
+                        sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last3_thismonth && c.SessionStart <= end_last3_thismonth && c.SessionEnd.HasValue);
                         if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
                             sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                        } else {
+                        } else if (faction.FactionTag != "L\\-") {
                             sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
                         }
                         foreach (var item in sessions.ToList())
