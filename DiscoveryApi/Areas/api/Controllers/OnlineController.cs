@@ -226,19 +226,17 @@ namespace DiscoveryApi.Controllers
                 Dictionary<string, ulong> curr_quarter_time = new Dictionary<string, ulong>();
                 Dictionary<string, ulong> last3_time = new Dictionary<string, ulong>();
 
-                // TODO: Code duplication is way out of control here, we really need to move some of this out to a function that can be reused for each of the different periods
-
                 //Get all sessions for the current month
-                IQueryable<ServerSessions> sessions = context.ServerSessions;
+                IQueryable<ServerSessions> factionSessions = context.ServerSessions;
                 if (faction.FactionTag == "L\\-") {
-                    sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
+                    factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
+                } else if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
+                    factionSessions = factionSessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
+                } else {
+                    factionSessions = factionSessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
                 }
-                sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue);
-                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
-                    sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                } else if (faction.FactionTag != "L\\-") {
-                    sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
-                }
+
+                var sessions = factionSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now && c.SessionStart <= now && c.SessionEnd.HasValue);
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
@@ -256,16 +254,7 @@ namespace DiscoveryApi.Controllers
                 }
 
                 // Get all sessions for last month
-                sessions = context.ServerSessions;
-                if (faction.FactionTag == "L\\-") {
-                    sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
-                }
-                sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue);
-                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
-                    sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                } else if (faction.FactionTag != "L\\-") {
-                    sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
-                }
+                sessions = factionSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last && c.SessionStart <= end_last && c.SessionEnd.HasValue);
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
@@ -283,16 +272,7 @@ namespace DiscoveryApi.Controllers
                 }
 
                 // Get all sessions for the current quarter
-                sessions = context.ServerSessions;
-                if (faction.FactionTag == "L\\-") {
-                    sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
-                }
-                sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now_quarter && c.SessionStart <= now && c.SessionEnd.HasValue);
-                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
-                    sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                } else if (faction.FactionTag != "L\\-") {
-                    sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
-                }
+                sessions = factionSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_now_quarter && c.SessionStart <= now && c.SessionEnd.HasValue);
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
@@ -310,16 +290,7 @@ namespace DiscoveryApi.Controllers
                 }
 
                 // Get all sessions for the last three months
-                sessions = context.ServerSessions;
-                if (faction.FactionTag == "L\\-") {
-                    sessions = sessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
-                }
-                sessions = sessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last3 && c.SessionStart <= end_last && c.SessionEnd.HasValue);
-                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
-                    sessions = sessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                } else if (faction.FactionTag != "L\\-") {
-                    sessions = sessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
-                }
+                sessions = factionSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= start_last3 && c.SessionStart <= end_last && c.SessionEnd.HasValue);
                 foreach (var session in sessions.ToList())
                 {
                     model.Characters[session.PlayerName] = new CharacterActivity();
