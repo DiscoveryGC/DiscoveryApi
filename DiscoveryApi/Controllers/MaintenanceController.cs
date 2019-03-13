@@ -266,10 +266,9 @@ namespace DiscoveryApi.Controllers
                     IQueryable<ServerSessions> factionSessions = context.ServerSessions;
                     if (faction.FactionTag == "L\\-") {
                         factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
-                    }
-                    if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
+                    } else if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi") {
                         factionSessions = factionSessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
-                    } else if (faction.FactionTag != "L\\-") {
+                    } else {
                         factionSessions = factionSessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
                     }
                     var sessions = factionSessions.Include(c => c.ServerSessionsDataConn).Where(c => c.SessionStart >= curr_start && c.SessionStart <= curr_end && c.SessionEnd.HasValue).ToList();
