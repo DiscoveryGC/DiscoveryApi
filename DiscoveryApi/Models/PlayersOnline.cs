@@ -18,7 +18,6 @@ namespace DiscoveryApi.Models
         public string Name { get; set; }
         public string System { get; set; }
         public string Region { get; set; }
-        public int Ping { get; set; }
     }
 
     public class PlayerOnlineAdmin
@@ -29,5 +28,6 @@ namespace DiscoveryApi.Models
         public string ID { get; set; }
         public string Ship { get; set; }
         public string IP { get; set; }
+        public int Ping { get; set; }
     }
 }

@@ -71,12 +71,10 @@ namespace DiscoveryApi.Controllers
                         //This is the always expected scenario
                         player.System = system != null ? system.Name : "Unknown";
                         player.Region = system != null ? regions.SingleOrDefault(c => c.Id == system.RegionId)?.Name ?? "Unknown" : "Unknown";
-                        player.Ping = last_system.Ping;
                     }
                     else
                     {
                         //But better be safe than sorry
-                        player.Ping = 0;
                         player.System = "ERROR";
                         player.Region = "ERROR";
                     }
@@ -163,10 +161,12 @@ namespace DiscoveryApi.Controllers
                     //This is the always expected scenario
                     player.System = system != null ? system.Name : "Unknown";
                     player.Region = system != null ? regions.SingleOrDefault(c => c.Id == system.RegionId)?.Name ?? "Unknown" : "Unknown";
+                    player.Ping = last_system.Ping;
                 }
                 else
                 {
                     //But better be safe than sorry
+                    player.Ping = 0;
                     player.System = "ERROR";
                     player.Region = "ERROR";
                 }
