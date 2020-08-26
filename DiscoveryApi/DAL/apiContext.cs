@@ -23,6 +23,15 @@ namespace DiscoveryApi.DAL
         public virtual DbSet<Systems> Systems { get; set; }
 
         public static IConfigurationRoot Configuration { get; set; }
+
+        public apiContext() : base()
+        {
+        }
+
+        public apiContext(DbContextOptions<apiContext> ctxOpts) : base(ctxOpts)
+        {
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()

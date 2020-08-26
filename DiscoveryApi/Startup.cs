@@ -42,7 +42,7 @@ namespace DiscoveryApi
             services.AddDbContext<apiContext>(options => options.UseMySql(Configuration.GetConnectionString("ApiConnection")));
 
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(option => option.EnableEndpointRouting = false);
             services.AddOptions();
             services.Configure<ConfigModel>(Configuration);
         }
@@ -50,8 +50,6 @@ namespace DiscoveryApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
             loggerFactory.AddSerilog();
 
             if (env.IsDevelopment())
