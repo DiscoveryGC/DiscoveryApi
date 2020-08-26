@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace DiscoveryApi
 {
@@ -19,6 +20,11 @@ namespace DiscoveryApi
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .UseApplicationInsights()
+                .ConfigureLogging(logging => {
+                    logging.SetMinimumLevel(LogLevel.Information);
+                    logging.AddConsole(options => options.IncludeScopes = true);
+                    logging.AddDebug();
+                })
                 .Build();
 
             host.Run();

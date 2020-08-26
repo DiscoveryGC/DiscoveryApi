@@ -23,6 +23,7 @@ namespace DiscoveryApi.DAL
         public virtual DbSet<Systems> Systems { get; set; }
 
         public static IConfigurationRoot Configuration { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
@@ -201,11 +202,11 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.Duration)
                     .HasColumnName("duration")
-                    .HasColumnType("bigint(20) unsigned");
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.Duration2)
                     .HasColumnName("duration2")
-                    .HasColumnType("bigint(20) unsigned");
+                    .HasColumnType("bigint(20)");
 
                 entity.Property(e => e.FactionId)
                     .HasColumnName("faction_id")
@@ -255,7 +256,7 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.SessionId)
                     .HasColumnName("session_id")
-                    .HasColumnType("int(11) unsigned");
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.PlayerId)
                     .IsRequired()
@@ -264,7 +265,7 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.PlayerLagAvg)
                     .HasColumnName("player_lag_avg")
-                    .HasColumnType("int(6) unsigned");
+                    .HasColumnType("int(6)");
 
                 entity.Property(e => e.PlayerLastShip)
                     .IsRequired()
@@ -273,7 +274,7 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.PlayerLossAvg)
                     .HasColumnName("player_loss_avg")
-                    .HasColumnType("int(6) unsigned");
+                    .HasColumnType("int(6)");
 
                 entity.Property(e => e.PlayerName)
                     .IsRequired()
@@ -282,7 +283,7 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.PlayerPingAvg)
                     .HasColumnName("player_ping_avg")
-                    .HasColumnType("int(6) unsigned");
+                    .HasColumnType("int(6)");
 
                 entity.Property(e => e.SessionEnd).HasColumnName("session_end");
 
@@ -307,11 +308,11 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.Duration)
                     .HasColumnName("duration")
-                    .HasColumnType("int(11) unsigned");
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Lag)
                     .HasColumnName("lag")
-                    .HasColumnType("int(11) unsigned");
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Location)
                     .IsRequired()
@@ -320,15 +321,15 @@ namespace DiscoveryApi.DAL
 
                 entity.Property(e => e.Loss)
                     .HasColumnName("loss")
-                    .HasColumnType("int(11) unsigned");
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Ping)
                     .HasColumnName("ping")
-                    .HasColumnType("int(11) unsigned");
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.SessionId)
                     .HasColumnName("session_id")
-                    .HasColumnType("int(11) unsigned");
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Ship)
                     .IsRequired()

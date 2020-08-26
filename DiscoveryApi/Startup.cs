@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ namespace DiscoveryApi
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -39,19 +40,18 @@ namespace DiscoveryApi
         public void ConfigureServices(IServiceCollection services)
         {
             //Initialize the link to the database
-            services.AddDbContext<apiContext>(options => options.UseMySql(Configuration.GetConnectionString("ApiConnection")));
+            services.AddDbContext<apiContext>();
 
             // Add framework services.
-            services.AddMvc();
+            services.AddControllersWithViews();
+            services.AddRouting();
             services.AddOptions();
             services.Configure<ConfigModel>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
             loggerFactory.AddSerilog();
 
             if (env.IsDevelopment())
@@ -64,13 +64,11 @@ namespace DiscoveryApi
             }
 
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("areaRoute", "{area:exists}/{controller=Index}/{action=Index}/{id?}");
-
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Index}/{action=Index}");
+                endpoints.MapControllerRoute("areaRoute", "{area:exists}/{controller=Index}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute("default", "{controller=Index}/{action=Index}");
             });
             //For NGINX
             app.UseForwardedHeaders(new ForwardedHeadersOptions

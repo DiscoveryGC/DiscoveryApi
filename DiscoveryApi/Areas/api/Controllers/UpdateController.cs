@@ -167,8 +167,6 @@ namespace DiscoveryApi.Controllers
                 foreach (var item in Result.Players.Where(c => !ProcessedPlayers.Contains(c.Name)))
                 {
                     var Session = new ServerSessions();
-                    context.ServerSessions.Add(Session);
-
                     Session.PlayerName = item.Name;
                     Session.PlayerId = item.Id;
                     Session.SessionIp = item.Ip;
@@ -177,6 +175,7 @@ namespace DiscoveryApi.Controllers
                     Session.PlayerLossAvg = 0;
                     Session.PlayerPingAvg = 0;
                     Session.PlayerLastShip = item.Ship;
+                    context.ServerSessions.Add(Session);
                     //We do not compile stats here !!!
 
                     var system = new ServerSessionsDataConn();
@@ -378,17 +377,7 @@ namespace DiscoveryApi.Controllers
 
                 //Get all sessions for the current month
                 IQueryable<ServerSessions> factionSessions = context.ServerSessions;
-                if (faction.FactionTag == "L\\-") {
-                    factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE 'L\\\\\\\\-%'");
-                } else if (faction.FactionTag == "|\\/|-") {
-                    factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE '|\\\\\\\\/|-%'");
-                } else if (faction.FactionTag == "\\*/~") {
-                    factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE '\\\\\\\\*/~%'");
-                } else if (faction.FactionTag == "(\\^/)") {
-                    factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE '(\\\\\\\\^/)%'");
-                } else if (faction.FactionTag == "/+\\-") {
-                    factionSessions = factionSessions.FromSql("SELECT * FROM server_sessions WHERE player_name LIKE '/+\\\\\\\\-%'");
-                } else if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi" || faction.FactionTag == "Reaver") {
+                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi" || faction.FactionTag == "Reaver") {
                     factionSessions = factionSessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
                 } else {
                     factionSessions = factionSessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
