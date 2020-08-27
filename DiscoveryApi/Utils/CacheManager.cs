@@ -9,7 +9,7 @@ namespace DiscoveryApi.Utils
     public struct FactionCache
     {
         public DateTime LastCache { get; set; }
-        public string Cache { get; set; }
+        public FactionDetailsModel Cache { get; set; }
     }
 
     /// <summary>
@@ -33,15 +33,11 @@ namespace DiscoveryApi.Utils
         public ulong Faction_DangerThreshold = 86400;
 
         //Available caches
-        public string PlayerOnlineCache;
+        public PlayersOnline<PlayerOnlineSingle> PlayerOnlineCache;
         public DateTime LastPlayerOnlineCache = new DateTime(0);
         public int LastPlayerOnlineCacheDuration = 60;
         
-        public string PlayerCountCache;
-        public DateTime LastPlayerCountCache = new DateTime(0);
-        public int LastPlayerCountCacheDuration = 900;
-
-        public string FactionGlobalActivityCache;
+        public FactionSummaryModel FactionGlobalActivityCache;
         public DateTime LastFactionGlobalActivityCache = new DateTime(0);
 
         public List<SpecificCharacterActivity> GlobalIndividualActivityCache;

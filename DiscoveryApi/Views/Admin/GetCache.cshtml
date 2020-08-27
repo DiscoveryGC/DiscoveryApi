@@ -40,7 +40,7 @@
             <h4 class="card-title">Faction Individual Activity Cache - @kvp.Key</h4>
             <h6 class="card-subtitle mb-2 text-muted">@kvp.Value.LastCache.ToString()</h6>
             <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#FactionIndividualCache-@i.ToString()" aria-expanded="false" aria-controls="FactionIndividualCache-@i.ToString()">Toggle</button>
-            <div id="FactionIndividualCache-@i.ToString()" class="card-block collapse"><pre>@JValue.Parse(kvp.Value.Cache).ToString(Formatting.Indented)</pre></div>
+            <div id="FactionIndividualCache-@i.ToString()" class="card-block collapse"><pre>@kvp.Value.Cache</pre></div>
         </div>
     </div>
     <br />

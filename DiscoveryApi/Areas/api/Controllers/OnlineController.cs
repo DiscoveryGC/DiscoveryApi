@@ -82,7 +82,7 @@ namespace DiscoveryApi.Controllers
                     model.Players.Add(player);
                 }
 
-                cm.PlayerOnlineCache = JsonConvert.SerializeObject(model);
+                cm.PlayerOnlineCache = model;
                 cm.LastPlayerOnlineCache = DateTime.UtcNow;
             }
 
@@ -112,21 +112,21 @@ namespace DiscoveryApi.Controllers
             if (cm.GlobalIndividualActivityCache == null)
             {
                 model.Error = Ressources.ApiResource.DataNotYetPopulated;
-                return Json(JsonConvert.SerializeObject(model));
+                return Json(model);
             }
 
             var CHARACTERS_PER_PAGE = 1000;
             if (pageInt < 1 || (pageInt - 1) * CHARACTERS_PER_PAGE >= cm.GlobalIndividualActivityCache.Count)
             {
                 model.Error = Ressources.ApiResource.PageParameterOutOfBounds;
-                return Json(JsonConvert.SerializeObject(model));
+                return Json(model);
             }
 
             model.Timestamp = cm.LastGlobalIndividualActivityCache.ToString("yyyy-MM-ddTHH:mm:ss");
             int count = Math.Min(cm.GlobalIndividualActivityCache.Count - (pageInt - 1) * CHARACTERS_PER_PAGE, CHARACTERS_PER_PAGE);
             model.Characters = cm.GlobalIndividualActivityCache.GetRange((pageInt - 1) * CHARACTERS_PER_PAGE, count);
             model.MaxPage = (int) Math.Ceiling((double) cm.GlobalIndividualActivityCache.Count / CHARACTERS_PER_PAGE);
-            return Json(JsonConvert.SerializeObject(model));
+            return Json(model);
         }
 
         // GET: /<controller>/
@@ -178,7 +178,7 @@ namespace DiscoveryApi.Controllers
                 model.Players.Add(player);
             }
 
-            return Json(JsonConvert.SerializeObject(model));
+            return Json(model);
         }
 
         [HttpGet("{tag}/{key}")]
@@ -327,7 +327,7 @@ namespace DiscoveryApi.Controllers
                 }
 
                 var cache = new FactionCache();
-                cache.Cache = JsonConvert.SerializeObject(model);
+                cache.Cache = model;
                 cache.LastCache = DateTime.UtcNow;
                 cm.FactionIndividualActivityCache[tag] = cache;
             }

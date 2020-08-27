@@ -489,7 +489,7 @@ namespace DiscoveryApi.Controllers
 
             }
 
-            cm.FactionGlobalActivityCache = JsonConvert.SerializeObject(model);
+            cm.FactionGlobalActivityCache = model;
             cm.LastFactionGlobalActivityCache = DateTime.UtcNow;
 
             logger.LogInformation("Ending GetFactionSummary cache renewal", cm.LastFactionGlobalActivityCache);

@@ -13,13 +13,10 @@ namespace DiscoveryApi.Models
         public int RetryMax { get; set; }
 
         //Available caches
-        public string PlayerOnlineCache { get; set; }
+        public PlayersOnline<PlayerOnlineSingle> PlayerOnlineCache { get; set; }
         public DateTime LastPlayerOnlineCache { get; set; }
 
-        public string PlayerCountCache { get; set; }
-        public DateTime LastPlayerCountCache { get; set; }
-
-        public string FactionGlobalActivityCache { get; set; }
+        public FactionSummaryModel FactionGlobalActivityCache { get; set; }
         public DateTime LastFactionGlobalActivityCache { get; set; }
 
         public Dictionary<string, FactionCache> FactionIndividualActivityCache { get; set; }

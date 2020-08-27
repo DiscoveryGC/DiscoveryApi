@@ -32,8 +32,8 @@ namespace DiscoveryApi.Controllers
             model.LastPlayerOnlineCache = cm.LastPlayerOnlineCache;
             model.LastFactionGlobalActivityCache = cm.LastFactionGlobalActivityCache;
 
-            model.PlayerOnlineCache = cm.PlayerOnlineCache != null ? JValue.Parse(cm.PlayerOnlineCache).ToString(Formatting.Indented) : "";
-            model.FactionGlobalActivityCache = cm.FactionGlobalActivityCache != null ? JValue.Parse(cm.FactionGlobalActivityCache).ToString(Formatting.Indented) : "";
+            model.PlayerOnlineCache = cm.PlayerOnlineCache;
+            model.FactionGlobalActivityCache = cm.FactionGlobalActivityCache;
             model.FactionIndividualActivityCache = cm.FactionIndividualActivityCache;
             model.RetryCount = cm.Retry;
             model.RetryMax = cm.MaxRetry;
