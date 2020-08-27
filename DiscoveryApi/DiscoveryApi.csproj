@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssetTargetFallback>portable-net45+win8</AssetTargetFallback>
     <UserSecretsId>b3016fcb-fcde-4e1f-b033-8a33999d9728</UserSecretsId>
   </PropertyGroup>
