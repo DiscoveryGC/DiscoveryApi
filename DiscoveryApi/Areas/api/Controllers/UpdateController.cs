@@ -377,7 +377,7 @@ namespace DiscoveryApi.Controllers
 
                 //Get all sessions for the current month
                 IQueryable<ServerSessions> factionSessions = context.ServerSessions;
-                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi" || faction.FactionTag == "Reaver") {
+                if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi" || faction.FactionTag == "Reaver" || faction.FactionTag == "-[Fae") {
                     factionSessions = factionSessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
                 } else {
                     factionSessions = factionSessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
