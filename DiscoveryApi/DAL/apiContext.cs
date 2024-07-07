@@ -319,6 +319,11 @@ namespace DiscoveryApi.DAL
                     .HasColumnName("location")
                     .HasColumnType("varchar(255)");
 
+                entity.Property(e => e.ObfuscatedLocation)
+                    .IsRequired()
+                    .HasColumnName("obfuscated_location")
+                    .HasColumnType("varchar(255)");
+
                 entity.Property(e => e.Loss)
                     .HasColumnName("loss")
                     .HasColumnType("int(11)");
