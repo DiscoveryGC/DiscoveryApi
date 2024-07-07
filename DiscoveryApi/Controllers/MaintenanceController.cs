@@ -264,7 +264,7 @@ namespace DiscoveryApi.Controllers
                     //Get all sessions matching the faction tag within that timeframe
                     //Also I don't think it would ever happen but we're going to ensure we only take sessions that have ended
                     IQueryable<ServerSessions> factionSessions = context.ServerSessions;
-                    if (faction.FactionTag == "[TBH]" || faction.FactionTag == "|Aoi" || faction.FactionTag == "Reaver" || faction.FactionTag == "-[Fae") {
+                    if (faction.FactionTag == "[TBH]") {
                         factionSessions = factionSessions.Where(c => c.PlayerName.Contains(faction.FactionTag));
                     } else {
                         factionSessions = factionSessions.Where(c => c.PlayerName.StartsWith(faction.FactionTag));
