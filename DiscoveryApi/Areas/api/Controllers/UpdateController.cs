@@ -90,7 +90,7 @@ namespace DiscoveryApi.Controllers
                 var cloakRequest = client.GetAsync("player_cloak_status.json");
                 cloakRequest.Wait();
 
-                Dictionary<string, string> PlayerObfuscatedSystems;
+                Dictionary<string, string> PlayerObfuscatedSystems = new Dictionary<string, string>();
 
                 if (cloakRequest.Result.IsSuccessStatusCode)
                 {
@@ -103,7 +103,7 @@ namespace DiscoveryApi.Controllers
 
                 foreach (var player in Result.Players)
                 {
-                    player.ObfuscatedSystem = PlayerObfuscatedSystems.get(player.Name, player.System);
+                    player.ObfuscatedSystem = PlayerObfuscatedSystems.GetValueOrDefault(player.Name, player.System);
                 }
             }
 

@@ -32,7 +32,7 @@ namespace DiscoveryApi.Models
         public Dictionary<string, UpdateResponseCloakRawPlayerModel> Players { get; set; }
     }
 
-    public class UpdateResponseRawPlayerModel
+    public class UpdateResponseCloakRawPlayerModel
     {
         public string System { get; set; }
     }

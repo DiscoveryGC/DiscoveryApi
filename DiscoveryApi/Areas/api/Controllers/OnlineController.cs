@@ -66,7 +66,7 @@ namespace DiscoveryApi.Controllers
                     var last_system = item.ServerSessionsDataConn.OrderByDescending(c => c.Stamp).FirstOrDefault();
                     if (last_system != null)
                     {
-                        var system = systems.SingleOrDefault(c => c.Nickname == last_system.Location.ToUpper()) ?? null;
+                        var system = systems.SingleOrDefault(c => c.Nickname == last_system.ObfuscatedLocation.ToUpper()) ?? null;
 
                         //This is the always expected scenario
                         player.System = system != null ? system.Name : "Unknown";
