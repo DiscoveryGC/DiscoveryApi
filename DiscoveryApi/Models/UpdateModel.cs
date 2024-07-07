@@ -27,6 +27,16 @@ namespace DiscoveryApi.Models
         public int Lag { get; set; }
     }
 
+    public class UpdateResponseCloakRawModel
+    {
+        public Dictionary<string, UpdateResponseCloakRawPlayerModel> Players { get; set; }
+    }
+
+    public class UpdateResponseRawPlayerModel
+    {
+        public string System { get; set; }
+    }
+
     public class UpdateResponseModel
     {
         public DateTime Timestamp { get; set; }
@@ -37,6 +47,7 @@ namespace DiscoveryApi.Models
     {
         public string Name { get; set;}
         public string System { get; set; }
+        public string ObfuscatedSystem { get; set; }
         public string Ip { get; set; }
         public string Ship { get; set; }
         public string Id { get; set; }

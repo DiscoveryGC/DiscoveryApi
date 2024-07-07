@@ -86,6 +86,25 @@ namespace DiscoveryApi.Controllers
                         Result.Players.Add(mdl);
                     }
                 }
+
+                var cloakRequest = client.GetAsync("player_cloak_status.json");
+                cloakRequest.Wait();
+
+                Dictionary<string, string> PlayerObfuscatedSystems;
+
+                if (cloakRequest.Result.IsSuccessStatusCode)
+                {
+                    var Dic = JsonConvert.DeserializeObject<UpdateResponseCloakRawModel>(cloakRequest.Result.Content.ReadAsStringAsync().Result);
+                    foreach (var item in Dic.Players)
+                    {
+                        PlayerObfuscatedSystems[item.Key] = item.Value.System;
+                    }
+                }
+
+                foreach (var player in Result.Players)
+                {
+                    player.ObfuscatedSystem = PlayerObfuscatedSystems.get(player.Name, player.System);
+                }
             }
 
             //We are done receiving the data, we can now update our database
@@ -130,7 +149,7 @@ namespace DiscoveryApi.Controllers
                         var PlayerInfo = Result.Players.SingleOrDefault(c => c.Name == item.PlayerName);
                         //We're moving the amount of entries to one per system change instead of one per minute. This will improve performance with minimal differences.
                         //Not checking for null because there is always at least one entry
-                        if (last_system.Location.ToUpper() == PlayerInfo.System.ToUpper())
+                        if (last_system.ObfuscatedLocation.ToUpper() == PlayerInfo.ObfuscatedSystem.ToUpper())
                         {
                             //The player hasn't changed systems. Update the current information.
                             last_system.Lag = (last_system.Lag + PlayerInfo.Lag) / 2;
@@ -142,7 +161,7 @@ namespace DiscoveryApi.Controllers
                         }
                         else
                         {
-                            //The player has changed systems
+                            //The player has changed systems, or cloaked/uncloaked
                             //Update the duration of the previous system
                             last_system.Duration += (int)Diff.TotalSeconds;
 
@@ -152,6 +171,7 @@ namespace DiscoveryApi.Controllers
                             system.Stamp = Result.Timestamp;
                             system.Ship = PlayerInfo.Ship;
                             system.Location = PlayerInfo.System;
+                            system.ObfuscatedLocation = PlayerInfo.ObfuscatedSystem;
                             system.Ping = PlayerInfo.Ping;
                             system.Lag = PlayerInfo.Lag;
                             system.Loss = PlayerInfo.Loss;
@@ -183,6 +203,7 @@ namespace DiscoveryApi.Controllers
                     system.Stamp = Result.Timestamp;
                     system.Duration = 0;
                     system.Location = item.System;
+                    system.ObfuscatedLocation = item.ObfuscatedSystem;
                     system.Ship = item.Ship;
                     system.Lag = item.Lag;
                     system.Loss = item.Loss;
